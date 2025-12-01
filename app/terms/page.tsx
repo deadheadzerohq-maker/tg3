@@ -5,7 +5,7 @@ export default function TermsPage() {
         <h1 style={{ fontSize: 32, marginBottom: 16 }}>Terms of Service</h1>
         <p style={{ marginBottom: 16, opacity: 0.8 }}>
           These Terms of Service govern your access to and use of TenderGuard, a software service operated by Deadhead
-          Zero Logistics LLC ("we", "us", "our").
+          Zero Logistics LLC (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;).
         </p>
         <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>1. Technology platform only</h2>
         <p style={{ marginBottom: 12 }}>
@@ -38,7 +38,7 @@ export default function TermsPage() {
         </p>
         <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>6. Changes</h2>
         <p style={{ marginBottom: 12 }}>
-          We may update these Terms from time to time. When we do, we will update the "Last updated" date and, where
+          We may update these Terms from time to time. When we do, we will update the &quot;Last updated&quot; date and, where
           appropriate, provide additional notice. Your continued use of the service after changes become effective
           constitutes acceptance of the updated Terms.
         </p>
