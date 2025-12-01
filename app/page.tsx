@@ -40,68 +40,68 @@ export default function HomePage() {
       style={{
         minHeight: "100vh",
         display: "flex",
-        alignItems: "center",
+        flexDirection: "column",
         justifyContent: "center",
-        padding: "24px 16px"
+        padding: "32px 16px",
+        backgroundColor: "#020617"
       }}
     >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 960,
-          display: "flex",
-          flexDirection: "column",
-          gap: 32
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: 40,
-              lineHeight: 1.1,
-              marginBottom: 8
-            }}
-          >
-            Deadhead Zero Logistics
-          </h1>
-          <p style={{ opacity: 0.8, maxWidth: 520 }}>
-            A technology platform focused on eliminating empty miles and protecting freight brokers from carrier risk.
-          </p>
-        </div>
+      <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+        <h1
+          style={{
+            fontSize: 42,
+            fontWeight: 800,
+            marginBottom: 12,
+            color: "#06b6d4"
+          }}
+        >
+          Deadhead Zero Logistics
+        </h1>
+
+        <p style={{ opacity: 0.8, marginBottom: 32 }}>
+          AI-powered carrier vetting for freight brokers. One price. Unlimited checks. 100% automated.
+        </p>
 
         <section
           style={{
-            maxWidth: 520,
-            padding: 24,
-            borderRadius: 16,
+            width: "100%",
             background:
               "linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(15,23,42,0.92) 60%, rgba(15,23,42,0.85) 100%)",
-            boxShadow: "0 18px 45px rgba(15, 23, 42, 0.9)",
-            border: "1px solid rgba(56, 189, 248, 0.25)"
+            padding: 24,
+            borderRadius: 14,
+            boxShadow: "0 10px 30px rgba(6, 182, 212, 0.4)",
+            border: "1px solid rgba(56, 189, 248, 0.25)",
+            marginBottom: 24
           }}
         >
-          <h2 style={{ fontSize: 28, marginBottom: 12 }}>TenderGuard</h2>
-          <p style={{ marginBottom: 20 }}>
-            Unlimited carrier vetting for freight brokers. Paste a DOT or MC number and get an instant risk score,
-            authority status, and insurance check.
+          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>
+            TenderGuard
+          </h2>
+
+          <p style={{ fontSize: 14, opacity: 0.9, marginBottom: 20 }}>
+            Unlimited carrier safety & compliance lookups using real FMCSA/SAFER signals.
+            No scraping. No manual work. Just paste a DOT or MC number.
           </p>
+
           <button
             onClick={startCheckout}
             disabled={loading}
             style={{
-              padding: "10px 20px",
+              background: "#06b6d4",
+              color: "#020617",
+              padding: "12px 24px",
               borderRadius: 999,
-              border: "none",
+              fontWeight: 700,
+              fontSize: 16,
               cursor: "pointer",
-              fontWeight: 600,
-              fontSize: 15,
-              minWidth: 240
+              minWidth: 260
             }}
           >
-            {loading ? "Redirecting..." : "Start TenderGuard for $399/mo"}
+            {loading ? "Redirecting..." : "Start TenderGuard — $399/mo"}
           </button>
+
           {error && (
-            <p style={{ marginTop: 12, color: "#f97373", fontSize: 13 }}>
+            <p style={{ marginTop: 12, color: "#f87171", fontSize: 13 }}>
               {error}
             </p>
           )}
