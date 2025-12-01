@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import supabase from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type LookupResponse = {
   carrierName: string | null;
@@ -39,7 +39,7 @@ export default function TenderGuardDashboard() {
       const userEmail = data.user.email;
       setEmail(userEmail);
 
-      // Check subscribers table (RLS currently off; later you can add policies)
+      // Check subscribers table
       const { data: subs, error: subsError } = await supabase
         .from("subscribers")
         .select("status, current_period_end")
@@ -62,7 +62,6 @@ export default function TenderGuardDashboard() {
           new Date(sub.current_period_end) > now);
 
       if (!active) {
-        // No active subscription – send back to marketing page
         router.replace("/");
         return;
       }
@@ -125,7 +124,6 @@ export default function TenderGuardDashboard() {
   }
 
   if (!hasAccess) {
-    // We already redirected; this is just a fallback
     return null;
   }
 
