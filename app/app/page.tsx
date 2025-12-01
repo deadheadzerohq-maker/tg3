@@ -39,7 +39,6 @@ export default function TenderGuardDashboard() {
       const userEmail = data.user.email;
       setEmail(userEmail);
 
-      // Check subscribers table
       const { data: subs, error: subsError } = await supabase
         .from("subscribers")
         .select("status, current_period_end")
@@ -134,7 +133,7 @@ export default function TenderGuardDashboard() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold">
-              TenderGuard Dashboard v2 TEST
+              TenderGuard Dashboard
             </h1>
             {email && (
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
