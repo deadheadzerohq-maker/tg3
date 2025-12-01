@@ -132,27 +132,30 @@ export async function POST(req: Request) {
 
     const risk = evaluateRisk(simplified);
 
-    try {
-      const { error: insertError } = await supabaseAdmin
-        .from("lookups")
-        .insert({
-          email,
-          query: rawValue,
-          dot_number: simplified.dotNumber,
-          mc_number: simplified.mcNumber,
-          carrier_name: simplified.carrierName,
-          operating_status: simplified.authorityStatus,
-          out_of_service: simplified.outOfService,
-          risk_score: risk.score,
-          risk_level: risk.level,
-          raw: data,
-        });
+    if (email) {
+      try {
+        const { error: insertError } = await supabaseAdmin
+          .from("lookups")
+          .insert({
+            email,
+            input_value: rawValue,
+            normalized_value: digits,
+            dot_number: simplified.dotNumber,
+            mc_number: simplified.mcNumber,
+            carrier_name: simplified.carrierName,
+            authority_status: simplified.authorityStatus,
+            insurance_status: simplified.insuranceStatus,
+            risk_score: risk.score,
+            risk_level: risk.level,
+            raw: data,
+          });
 
-      if (insertError) {
-        console.error("Supabase lookups insert error:", insertError);
+        if (insertError) {
+          console.error("Supabase lookups insert error:", insertError);
+        }
+      } catch (e) {
+        console.error("Unexpected Supabase error inserting lookup:", e);
       }
-    } catch (e) {
-      console.error("Unexpected Supabase error inserting lookup:", e);
     }
 
     const responsePayload = {
