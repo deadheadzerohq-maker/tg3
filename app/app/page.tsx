@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabaseClient } from "../../lib/supabaseClient";
 
 type LookupResult = {
   carrierName: string;
@@ -14,10 +16,55 @@ type LookupResult = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [checkingAccess, setCheckingAccess] = useState(true);
+  const [subscriptionOk, setSubscriptionOk] = useState<boolean | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
   const [inputValue, setInputValue] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingLookup, setLoadingLookup] = useState(false);
   const [result, setResult] = useState<LookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 1) Check Supabase auth + subscription
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const {
+          data: { user }
+        } = await supabaseClient.auth.getUser();
+
+        if (!user || !user.email) {
+          router.replace("/login");
+          return;
+        }
+
+        setUserEmail(user.email);
+
+        const { data, error } = await supabaseClient
+          .from("subscribers")
+          .select("status, current_period_end")
+          .eq("email", user.email)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking subscribers:", error);
+          setSubscriptionOk(false);
+        } else if (!data) {
+          setSubscriptionOk(false);
+        } else {
+          setSubscriptionOk(data.status === "active");
+        }
+      } catch (err) {
+        console.error(err);
+        setSubscriptionOk(false);
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+
+    check();
+  }, [router]);
 
   const runLookup = async () => {
     setError(null);
@@ -28,7 +75,7 @@ export default function DashboardPage() {
       return;
     }
 
-    setLoading(true);
+    setLoadingLookup(true);
     try {
       const res = await fetch("/api/lookup", {
         method: "POST",
@@ -46,15 +93,121 @@ export default function DashboardPage() {
     } catch (err: any) {
       setError(err.message || "Lookup failed");
     } finally {
-      setLoading(false);
+      setLoadingLookup(false);
     }
   };
 
+  const handleSignOut = async () => {
+    await supabaseClient.auth.signOut();
+    router.replace("/login");
+  };
+
+  // Loading state while we check auth + subscription
+  if (checkingAccess) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          padding: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <p>Checking access…</p>
+      </main>
+    );
+  }
+
+  // Logged in but no active subscription
+  if (subscriptionOk === false) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          padding: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          textAlign: "center"
+        }}
+      >
+        <h1 style={{ fontSize: 24, marginBottom: 12 }}>Subscription required</h1>
+        <p style={{ maxWidth: 420, opacity: 0.8 }}>
+          We couldn&apos;t find an active TenderGuard subscription for{" "}
+          <strong>{userEmail}</strong>. Make sure you use the same email you used
+          at checkout, or start a new subscription from the homepage.
+        </p>
+        <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+          <button
+            onClick={() => router.push("/")}
+            style={{
+              padding: "8px 14px",
+              borderRadius: 999,
+              border: "none",
+              backgroundColor: "#06b6d4",
+              color: "#020617",
+              fontWeight: 600,
+              cursor: "pointer"
+            }}
+          >
+            Go to homepage
+          </button>
+          <button
+            onClick={handleSignOut}
+            style={{
+              padding: "8px 14px",
+              borderRadius: 999,
+              border: "1px solid #4b5563",
+              backgroundColor: "transparent",
+              color: "#e5e7eb",
+              fontWeight: 500,
+              cursor: "pointer"
+            }}
+          >
+            Sign out
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // Otherwise: access granted
   return (
     <main style={{ minHeight: "100vh", padding: 24 }}>
-      <h1 style={{ fontSize: 28, marginBottom: 16 }}>TenderGuard Dashboard</h1>
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 26, marginBottom: 4 }}>TenderGuard Dashboard</h1>
+          <p style={{ opacity: 0.8, fontSize: 13 }}>
+            Logged in as <strong>{userEmail}</strong>
+          </p>
+        </div>
+        <button
+          onClick={handleSignOut}
+          style={{
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: "1px solid #4b5563",
+            backgroundColor: "transparent",
+            color: "#e5e7eb",
+            fontSize: 13,
+            cursor: "pointer"
+          }}
+        >
+          Sign out
+        </button>
+      </header>
+
       <p style={{ marginBottom: 16 }}>
-        Enter a carrier MC or DOT number to run a risk check. (In v1 this will be limited to active subscribers.)
+        Paste a carrier MC or DOT number to run a TenderGuard check.
       </p>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
@@ -74,21 +227,25 @@ export default function DashboardPage() {
         />
         <button
           onClick={runLookup}
-          disabled={loading}
+          disabled={loadingLookup}
           style={{
             padding: "8px 16px",
             borderRadius: 6,
             border: "none",
             cursor: "pointer",
             fontWeight: 600,
-            minWidth: 140
+            minWidth: 140,
+            backgroundColor: "#06b6d4",
+            color: "#020617"
           }}
         >
-          {loading ? "Checking..." : "Run check"}
+          {loadingLookup ? "Checking..." : "Run check"}
         </button>
       </div>
 
-      {error && <p style={{ color: "#f97373", marginBottom: 12 }}>{error}</p>}
+      {error && (
+        <p style={{ color: "#f97373", marginBottom: 12, fontSize: 13 }}>{error}</p>
+      )}
 
       {result && (
         <div
