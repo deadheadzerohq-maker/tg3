@@ -1,14 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabaseClient } from "../lib/supabaseClient";
 
 export default function HomePage() {
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [startingCheckout, setStartingCheckout] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // If a Supabase session exists, send user straight to /app
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const { data } = await supabaseClient.auth.getUser();
+        if (data.user) {
+          router.replace("/app");
+          return;
+        }
+      } catch (err) {
+        console.error("Error checking session", err);
+      } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    check();
+  }, [router]);
 
   const startCheckout = async () => {
     setError(null);
-    setLoading(true);
+    setStartingCheckout(true);
     try {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -31,77 +54,136 @@ export default function HomePage() {
       console.error(err);
       setError(err.message || "Failed to start checkout");
     } finally {
-      setLoading(false);
+      setStartingCheckout(false);
     }
   };
+
+  // Optional: small “checking” state, but it will usually be very quick
+  if (checkingSession) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#020617",
+          color: "#e5e7eb"
+        }}
+      >
+        <p>Loading…</p>
+      </main>
+    );
+  }
 
   return (
     <main
       style={{
         minHeight: "100vh",
+        padding: "48px 16px 80px",
+        backgroundColor: "#020617",
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "32px 16px",
-        backgroundColor: "#020617"
+        alignItems: "center",
+        justifyContent: "center"
       }}
     >
-      <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 900,
+          textAlign: "center"
+        }}
+      >
         <h1
           style={{
-            fontSize: 42,
+            fontSize: 48,
+            lineHeight: 1.1,
             fontWeight: 800,
-            marginBottom: 12,
+            marginBottom: 16,
             color: "#06b6d4"
           }}
         >
           Deadhead Zero Logistics
         </h1>
 
-        <p style={{ opacity: 0.8, marginBottom: 32 }}>
-          AI-powered carrier vetting for freight brokers. One price. Unlimited checks. 100% automated.
+        <p
+          style={{
+            fontSize: 16,
+            color: "#e5e7eb",
+            opacity: 0.9,
+            maxWidth: 640,
+            margin: "0 auto 40px"
+          }}
+        >
+          AI-powered carrier vetting for freight brokers. One price. Unlimited
+          checks. 100% automated.
         </p>
 
         <section
           style={{
-            width: "100%",
+            margin: "0 auto",
+            maxWidth: 800,
+            padding: "32px 24px 28px",
+            borderRadius: 24,
             background:
-              "linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(15,23,42,0.92) 60%, rgba(15,23,42,0.85) 100%)",
-            padding: 24,
-            borderRadius: 14,
-            boxShadow: "0 10px 30px rgba(6, 182, 212, 0.4)",
-            border: "1px solid rgba(56, 189, 248, 0.25)",
-            marginBottom: 24
+              "radial-gradient(circle at top, rgba(34,211,238,0.28), transparent 55%), #020617",
+            boxShadow: "0 24px 80px rgba(8,145,178,0.6)",
+            border: "1px solid rgba(56,189,248,0.35)"
           }}
         >
-          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>
+          <h2
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              marginBottom: 12,
+              color: "#f9fafb"
+            }}
+          >
             TenderGuard
           </h2>
-
-          <p style={{ fontSize: 14, opacity: 0.9, marginBottom: 20 }}>
-            Unlimited carrier safety & compliance lookups using real FMCSA/SAFER signals.
-            No scraping. No manual work. Just paste a DOT or MC number.
+          <p
+            style={{
+              fontSize: 15,
+              color: "#e5e7eb",
+              opacity: 0.9,
+              maxWidth: 620,
+              margin: "0 auto 24px"
+            }}
+          >
+            Unlimited carrier safety &amp; compliance lookups using real FMCSA/SAFER
+            signals. No scraping. No manual work. Just paste a DOT or MC number.
           </p>
 
           <button
             onClick={startCheckout}
-            disabled={loading}
+            disabled={startingCheckout}
             style={{
-              background: "#06b6d4",
-              color: "#020617",
-              padding: "12px 24px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "12px 28px",
               borderRadius: 999,
-              fontWeight: 700,
+              border: "2px solid #0ea5e9",
+              backgroundColor: "#22d3ee",
+              color: "#020617",
+              fontWeight: 800,
               fontSize: 16,
               cursor: "pointer",
+              boxShadow: "0 12px 40px rgba(34,211,238,0.8)",
               minWidth: 260
             }}
           >
-            {loading ? "Redirecting..." : "Start TenderGuard — $399/mo"}
+            {startingCheckout ? "Redirecting…" : "Start TenderGuard — $399/mo"}
           </button>
 
           {error && (
-            <p style={{ marginTop: 12, color: "#f87171", fontSize: 13 }}>
+            <p
+              style={{
+                marginTop: 12,
+                color: "#f97373",
+                fontSize: 13
+              }}
+            >
               {error}
             </p>
           )}
