@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import supabase from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,7 +54,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl bg-slate-900/80 border border-slate-800 p-8 shadow-xl shadow-cyan-500/10">
+      <div className="w-full max-w-md rounded-2xl bg-slate-900/80 border border-slate-800 p-8 shadow-xlShadow shadow-cyan-500/10">
         <h1 className="text-2xl font-semibold mb-2">Log in to TenderGuard</h1>
         <p className="text-sm text-slate-400 mb-6">
           We&apos;ll email you a magic link. No passwords, no friction.
