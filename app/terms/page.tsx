@@ -1,48 +1,26 @@
+export const metadata = { title: "TenderGuard Terms of Service" };
+
 export default function TermsPage() {
   return (
-    <main style={{ minHeight: "100vh", padding: "32px 16px" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        <h1 style={{ fontSize: 32, marginBottom: 16 }}>Terms of Service</h1>
-        <p style={{ marginBottom: 16, opacity: 0.8 }}>
-          These Terms of Service govern your access to and use of TenderGuard, a software service operated by Deadhead
-          Zero Logistics LLC (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;).
+    <main className="mx-auto max-w-4xl px-6 py-16 space-y-6">
+      <h1 className="text-3xl font-semibold">Terms of Service</h1>
+      <p className="text-slate-300 text-sm">Effective: 2024</p>
+      <div className="prose prose-invert max-w-none text-slate-200 prose-headings:text-slate-50 prose-strong:text-slate-50">
+        <p>
+          Deadhead Zero Logistics LLC operates the TenderGuard software platform. TenderGuard is a technology service that helps freight brokers evaluate carrier authority, insurance, and safety signals. TenderGuard is not a freight broker or load board and does not arrange transportation, hold freight dollars, or intermediate payments of any kind.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>1. Technology platform only</h2>
-        <p style={{ marginBottom: 12 }}>
-          TenderGuard is a technology platform only. We do not arrange, broker, or tender freight, nor do we
-          handle or hold freight payments. All transportation services and payments are agreed directly between brokers,
-          carriers, shippers, and other counterparties.
+        <p>
+          By using TenderGuard, you agree to use all data and scoring for informational purposes only. You remain responsible for your own due diligence, compliance obligations, and verification with shippers, carriers, and regulators. No information provided by TenderGuard should be treated as legal, compliance, or safety advice.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>2. No legal or compliance advice</h2>
-        <p style={{ marginBottom: 12 }}>
-          Information shown in the product, including carrier profiles, risk scores, authority or insurance status, and
-          related data, is provided for informational purposes only. It is not legal, compliance, or safety advice.
-          You are solely responsible for your own carrier selection, due diligence, and compliance.
+        <p>
+          You agree not to misuse the service, attempt to reverse engineer it, or use it in violation of any applicable law. Service availability and features may change over time. Subscriptions renew on a monthly basis unless canceled. Refunds are not guaranteed.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>3. Accounts and subscriptions</h2>
-        <p style={{ marginBottom: 12 }}>
-          Access to the service may require a paid subscription. You authorize us and our payment processors (such as
-          Stripe) to charge your selected payment method on a recurring basis until you cancel. Subscription fees are
-          generally non-refundable except where required by law.
+        <p>
+          TenderGuard may link out to third-party sources (e.g., FMCSA/SAFER). Those systems are outside our control. We are not responsible for their accuracy, uptime, or terms.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>4. Acceptable use</h2>
-        <p style={{ marginBottom: 12 }}>
-          You agree not to misuse the service, including but not limited to scraping, reselling data without permission,
-          attempting to circumvent security, or using the platform for any unlawful purpose.
+        <p>
+          If you have questions about these terms, please contact Deadhead Zero Logistics LLC before using the platform.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>5. Limitation of liability</h2>
-        <p style={{ marginBottom: 12 }}>
-          To the maximum extent permitted by law, we are not liable for lost profits, lost freight, consequential
-          damages, or indirect losses arising out of or in connection with the use of the service. Your exclusive
-          remedy is to stop using the service.
-        </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>6. Changes</h2>
-        <p style={{ marginBottom: 12 }}>
-          We may update these Terms from time to time. When we do, we will update the &quot;Last updated&quot; date and, where
-          appropriate, provide additional notice. Your continued use of the service after changes become effective
-          constitutes acceptance of the updated Terms.
-        </p>
-        <p style={{ marginTop: 24, opacity: 0.7 }}>Last updated: {new Date().getFullYear()}</p>
       </div>
     </main>
   );

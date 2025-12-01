@@ -1,44 +1,23 @@
+export const metadata = { title: "TenderGuard Privacy Policy" };
+
 export default function PrivacyPage() {
   return (
-    <main style={{ minHeight: "100vh", padding: "32px 16px" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        <h1 style={{ fontSize: 32, marginBottom: 16 }}>Privacy Policy</h1>
-        <p style={{ marginBottom: 16, opacity: 0.8 }}>
-          This Privacy Policy explains how Deadhead Zero Logistics LLC (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) collects, uses,
-          and protects information in connection with the TenderGuard platform.
+    <main className="mx-auto max-w-4xl px-6 py-16 space-y-6">
+      <h1 className="text-3xl font-semibold">Privacy Policy</h1>
+      <p className="text-slate-300 text-sm">Effective: 2024</p>
+      <div className="prose prose-invert max-w-none text-slate-200 prose-headings:text-slate-50 prose-strong:text-slate-50">
+        <p>
+          Deadhead Zero Logistics LLC collects only the data needed to authenticate users, process payments, and run TenderGuard lookups. Typical data includes your email, carrier lookup inputs, lookup results, and billing identifiers from Stripe.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>1. Information we collect</h2>
-        <p style={{ marginBottom: 12 }}>
-          We may collect information you provide directly, such as your name, email address, company details,
-          billing information, and usage activity within the platform. We may also log technical data such as IP
-          address, browser type, and device information for security and analytics.
+        <p>
+          We do not sell broker or carrier data. Data is stored in Supabase and Stripe under industry-standard security. Access is limited to your authenticated account, subject to future per-user row-level security (RLS) policies.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>2. How we use information</h2>
-        <p style={{ marginBottom: 12 }}>
-          We use your information to operate and improve the service, provide customer support, process payments,
-          analyze usage, and communicate with you about updates, security notices, and relevant product information.
+        <p>
+          Magic-link authentication is provided by Supabase. Billing is handled by Stripe. Each provider has its own privacy terms, and you should review them before using TenderGuard.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>3. Sharing with third parties</h2>
-        <p style={{ marginBottom: 12 }}>
-          We may share information with trusted service providers who assist with hosting, analytics, payment
-          processing, communications, and other operational functions. We do not sell your personal information.
+        <p>
+          TenderGuard is informational only. Brokers must perform their own due diligence and comply with all applicable laws and contractual requirements when using any data surfaced by the platform.
         </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>4. Data security</h2>
-        <p style={{ marginBottom: 12 }}>
-          We implement reasonable technical and organizational measures to help protect your information. However,
-          no system can be completely secure, and we cannot guarantee absolute security of your data.
-        </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>5. Your choices</h2>
-        <p style={{ marginBottom: 12 }}>
-          You may update certain account information from within the product or by contacting us. You may also opt out
-          of certain non-essential communications. Some notices, such as security or legal notifications, are required.
-        </p>
-        <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>6. Contact</h2>
-        <p style={{ marginBottom: 12 }}>
-          If you have questions about this Privacy Policy, you can contact us using the support channels listed in the
-          TenderGuard application or on our website.
-        </p>
-        <p style={{ marginTop: 24, opacity: 0.7 }}>Last updated: {new Date().getFullYear()}</p>
       </div>
     </main>
   );
