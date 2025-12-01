@@ -9,37 +9,28 @@ function getStripeClient() {
   if (!secretKey) {
     throw new Error("STRIPE_SECRET_KEY is not set");
   }
-  return new Stripe(secretKey, {
-    apiVersion: "2024-06-20"
-  });
+  return new Stripe(secretKey, { apiVersion: "2024-06-20" });
 }
 
-async function readRawBody(request: Request): Promise<Buffer> {
-  const arrayBuffer = await request.arrayBuffer();
-  return Buffer.from(arrayBuffer);
+async function readRawBody(req: Request): Promise<Buffer> {
+  const ab = await req.arrayBuffer();
+  return Buffer.from(ab);
 }
 
 export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature");
-  if (!sig) {
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-  }
+  if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET is not set");
-    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
-  }
+  if (!webhookSecret) return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
 
   const stripe = getStripeClient();
-
   let event: Stripe.Event;
 
   try {
     const rawBody = await readRawBody(req);
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err: any) {
-    console.error("Webhook signature verification failed.", err.message);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -48,60 +39,47 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const customerId = session.customer as string;
-        const subscriptionId = session.subscription as string;
-        const email = session.customer_details?.email;
+        const customerId = session.customer as string | null;
+        const subscriptionId = session.subscription as string | null;
+        const email = session.customer_details?.email || (session.customer_email as string | null);
 
-        if (!email || !customerId || !subscriptionId) break;
-
-        const { data: profile } = await supabaseAdmin
-          .from("profiles")
-          .select("*")
-          .eq("email", email)
-          .maybeSingle();
-
-        if (!profile) {
-          console.warn("No profile for email", email);
-          break;
-        }
+        if (!customerId || !subscriptionId || !email) break;
 
         const sub = await stripe.subscriptions.retrieve(subscriptionId);
 
-        await supabaseAdmin.from("subscriptions").upsert(
+        await supabaseAdmin.from("subscribers").upsert(
           {
-            user_id: profile.id,
+            email,
             stripe_customer_id: customerId,
             stripe_subscription_id: subscriptionId,
             status: sub.status,
             current_period_end: new Date(sub.current_period_end * 1000).toISOString()
           },
-          { onConflict: "stripe_subscription_id" }
+          { onConflict: "stripe_customer_id" }
         );
 
         break;
       }
+
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const subscriptionId = subscription.id;
-
+        const sub = event.data.object as Stripe.Subscription;
         await supabaseAdmin
-          .from("subscriptions")
+          .from("subscribers")
           .update({
-            status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+            status: sub.status,
+            current_period_end: new Date(sub.current_period_end * 1000).toISOString()
           })
-          .eq("stripe_subscription_id", subscriptionId);
-
+          .eq("stripe_subscription_id", sub.id);
         break;
       }
+
       default:
         break;
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("Webhook handler error:", err);
     return NextResponse.json({ error: "Webhook handler error" }, { status: 500 });
   }
 }
