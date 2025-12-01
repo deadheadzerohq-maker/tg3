@@ -1,169 +1,144 @@
 import Link from "next/link";
+import { ArrowRight } from "react-icons/fi";
+
+const highlights = [
+  "Instant MC/DOT vetting with TenderGuard risk scoring",
+  "Bulk checks and audit-grade history for every lane",
+  "Stripe-managed $399/mo flat subscription",
+];
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
-      <div className="flex-1">
-        <header className="border-b border-slate-800">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
-              <span className="text-sm font-semibold tracking-wide text-slate-300">
-                Deadhead Zero Logistics LLC
-              </span>
-            </div>
-            <div className="flex gap-3 text-sm">
-              <Link
-                href="/login"
-                className="text-slate-300 hover:text-slate-50"
-              >
-                Log in
-              </Link>
-              <a
-                href="#pricing"
-                className="rounded-full bg-cyan-500 text-slate-950 px-4 py-2 font-semibold hover:bg-cyan-400 transition"
-              >
-                Start TenderGuard
-              </a>
-            </div>
+    <main className="relative isolate min-h-screen overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/30 via-transparent to-slate-950" />
+      <div className="relative mx-auto max-w-6xl px-6 pt-16 pb-24 space-y-16">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm text-slate-300">
+            <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-glow" aria-hidden />
+            <span className="font-semibold">TenderGuard</span>
+            <span className="text-slate-500">by Deadhead Zero Logistics LLC</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <Link href="/login" className="text-slate-200 hover:text-cyan-200">
+              Log in
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-full bg-cyan-500 px-4 py-2 font-semibold text-slate-950 shadow-glow hover:bg-cyan-400"
+            >
+              Start TenderGuard
+            </Link>
           </div>
         </header>
 
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20 space-y-12">
-          {/* Hero */}
-          <div className="space-y-6 text-center sm:text-left">
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-cyan-400 drop-shadow-[0_0_28px_rgba(34,211,238,0.6)]">
-              Deadhead Zero Logistics
+        <section className="grid lg:grid-cols-2 gap-10 items-start">
+          <div className="space-y-8">
+            <p className="inline-flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-cyan-200">
+              Automated carrier safety desk
+            </p>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-slate-50 drop-shadow-[0_0_35px_rgba(34,211,238,0.35)]">
+              TenderGuard vets every carrier before you tender a load.
             </h1>
-            <p className="text-base sm:text-lg text-slate-300 max-w-3xl">
-              <span className="font-semibold">TenderGuard</span> automates
-              carrier vetting for freight brokers. One price. Unlimited checks.
-              100% automated. No more tab-hopping between SAFER, spreadsheets,
-              and email trails.
+            <p className="text-lg text-slate-300 max-w-2xl">
+              Stop juggling SAFER tabs and spreadsheets. TenderGuard runs MC/DOT checks, logs every interaction, and keeps your team compliant with a single $399/mo subscription.
             </p>
-          </div>
-
-          {/* Product card */}
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 shadow-[0_0_60px_rgba(34,211,238,0.25)] p-6 sm:p-10 space-y-6">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-center sm:text-left">
-              TenderGuard
-            </h2>
-            <p className="text-sm sm:text-base text-slate-300 max-w-3xl">
-              Unlimited carrier safety &amp; compliance lookups using real
-              FMCSA/SAFER signals. Bulk paste MC/DOT lists, auto-log every
-              check, and generate an audit trail shippers actually respect.
-            </p>
-            <ul className="grid sm:grid-cols-3 gap-4 text-sm text-slate-300">
-              <li className="bg-slate-950/60 border border-slate-800 rounded-2xl px-4 py-3">
-                <p className="font-semibold mb-1">Instant vetting</p>
-                <p>Paste MC/DOT, get a TenderGuard risk score and carrier snapshot.</p>
-              </li>
-              <li className="bg-slate-950/60 border border-slate-800 rounded-2xl px-4 py-3">
-                <p className="font-semibold mb-1">Bulk checks</p>
-                <p>Validate dozens of carriers at once before you tender a lane.</p>
-              </li>
-              <li className="bg-slate-950/60 border border-slate-800 rounded-2xl px-4 py-3">
-                <p className="font-semibold mb-1">Audit receipts</p>
-                <p>Every lookup is logged so you can prove vetting happened.</p>
-              </li>
-            </ul>
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+            <div className="space-y-3">
+              {highlights.map((item) => (
+                <div key={item} className="flex items-start gap-3 text-slate-200">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-cyan-400 shadow-glow" aria-hidden />
+                  <p className="text-sm sm:text-base text-slate-300">{item}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/login"
-                className="w-full sm:w-auto rounded-full bg-cyan-500 text-slate-950 px-6 py-3 text-sm font-semibold text-center hover:bg-cyan-400 transition"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-cyan-500 px-6 py-3 font-semibold text-slate-950 shadow-glow hover:bg-cyan-400"
               >
-                Start TenderGuard — log in
+                Launch TenderGuard
+                <ArrowRight className="h-4 w-4" />
               </Link>
-              <p className="text-xs text-slate-400 text-center sm:text-left">
-                Technology platform only, not a broker or load board. We never
-                hold freight dollars.
-              </p>
+              <a
+                href="#pricing"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-700 px-6 py-3 text-sm text-slate-200 hover:border-cyan-400"
+              >
+                See pricing
+              </a>
             </div>
           </div>
 
-          {/* Pricing */}
-          <div id="pricing" className="space-y-4">
-            <h3 className="text-xl sm:text-2xl font-semibold">
-              Pricing built for real brokerages
-            </h3>
-            <div className="grid sm:grid-cols-3 gap-4">
-              {/* Starter */}
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 flex flex-col">
-                <h4 className="text-sm font-semibold text-slate-200">
-                  Starter Broker
-                </h4>
-                <p className="mt-2 text-2xl font-bold">$39</p>
-                <p className="text-xs text-slate-400 mb-4">per month</p>
-                <ul className="text-xs text-slate-300 space-y-1 mb-4">
-                  <li>Single + bulk lookups</li>
-                  <li>Up to 500 checks / month</li>
-                  <li>History & audit log</li>
-                </ul>
-                <span className="mt-auto text-[11px] text-slate-500">
-                  Great for solo brokers and small teams.
-                </span>
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-card shadow-cyan-500/10">
+            <h2 className="text-xl font-semibold">TenderGuard snapshot</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Preview of the dashboard experience your team gets on day one.
+            </p>
+            <div className="mt-6 space-y-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Risk engine</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-cyan-200">Carrier Safety Pass</p>
+                    <p className="text-sm text-slate-400">MC 784512 · DOT 1984502</p>
+                  </div>
+                  <div className="rounded-full bg-emerald-500/15 px-3 py-1 text-emerald-200 text-xs font-semibold border border-emerald-400/40">
+                    Low risk · 86
+                  </div>
+                </div>
               </div>
-              {/* Pro */}
-              <div className="rounded-2xl border border-cyan-500 bg-slate-950/80 p-5 flex flex-col shadow-[0_0_40px_rgba(34,211,238,0.3)]">
-                <h4 className="text-sm font-semibold text-cyan-300">
-                  Pro Brokerage
-                </h4>
-                <p className="mt-2 text-2xl font-bold">$99</p>
-                <p className="text-xs text-slate-400 mb-4">per month</p>
-                <ul className="text-xs text-slate-200 space-y-1 mb-4">
-                  <li>5 team seats</li>
-                  <li>5,000 checks / month</li>
-                  <li>Priority alerts on authority & insurance</li>
-                  <li>Full lookup history</li>
-                </ul>
-                <span className="mt-auto text-[11px] text-slate-500">
-                  For growing brokerages that live in the load board.
-                </span>
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Monitoring</p>
+                <div className="mt-2 grid grid-cols-2 gap-4 text-sm text-slate-300">
+                  <div>
+                    <p className="text-slate-400">Active carriers</p>
+                    <p className="text-lg font-semibold">248</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">Alerts</p>
+                    <p className="text-lg font-semibold text-amber-300">3</p>
+                  </div>
+                </div>
               </div>
-              {/* Enterprise */}
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5 flex flex-col">
-                <h4 className="text-sm font-semibold text-slate-200">
-                  Enterprise 3PL
-                </h4>
-                <p className="mt-2 text-2xl font-bold">Let&apos;s talk</p>
-                <p className="text-xs text-slate-400 mb-4">custom</p>
-                <ul className="text-xs text-slate-300 space-y-1 mb-4">
-                  <li>Unlimited seats</li>
-                  <li>API access for your TMS</li>
-                  <li>Dedicated support & SLAs</li>
-                </ul>
-                <span className="mt-auto text-[11px] text-slate-500">
-                  For 3PLs and digital brokers that need deeper integrations.
-                </span>
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-slate-400">Billing</p>
+                <p className="mt-2 text-sm text-slate-300">Single plan · $399/mo · Unlimited users</p>
               </div>
             </div>
           </div>
         </section>
-      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 px-4 sm:px-6 py-4 text-xs text-slate-500">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="flex gap-4">
-            <a
-              href="/terms"
-              className="hover:text-slate-300 underline underline-offset-4"
+        <section id="pricing" className="rounded-3xl border border-slate-800 bg-slate-950/80 p-8 shadow-card shadow-cyan-500/10 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Pricing</p>
+              <h3 className="text-2xl font-semibold">One plan, all-inclusive</h3>
+            </div>
+            <Link
+              href="/login"
+              className="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-glow hover:bg-cyan-400"
             >
-              Terms of Service
-            </a>
-            <a
-              href="/privacy"
-              className="hover:text-slate-300 underline underline-offset-4"
-            >
-              Privacy Policy
-            </a>
+              Get started for $399/mo
+            </Link>
           </div>
-          <p className="text-[11px] sm:text-xs">
-            Technology platform only, not a broker or load board. We never hold
-            freight dollars. Operated by Deadhead Zero Logistics LLC.
-          </p>
-        </div>
-      </footer>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="col-span-2 rounded-2xl border border-cyan-500 bg-cyan-500/10 p-6 shadow-glow">
+              <p className="text-sm font-semibold text-cyan-200">TenderGuard Subscription</p>
+              <p className="mt-2 text-4xl font-bold text-slate-50">$399<span className="text-base font-medium text-slate-300">/mo</span></p>
+              <p className="mt-2 text-sm text-slate-300">Unlimited carrier checks, unlimited seats, Stripe billing.</p>
+              <ul className="mt-4 space-y-2 text-sm text-slate-200">
+                <li>• Magic-link authentication via Supabase</li>
+                <li>• Dashboard, Deep Search, Monitoring, and History</li>
+                <li>• Stripe-hosted billing & management portal</li>
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-300">
+              <p className="font-semibold text-slate-100">Compliance posture</p>
+              <p className="mt-2 text-slate-400">
+                Technology platform only. TenderGuard does not broker freight or hold funds. Brokers must verify and comply with all federal and shipper requirements.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
