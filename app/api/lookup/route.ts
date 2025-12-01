@@ -1,38 +1,46 @@
+// app/api/lookup/route.ts
 import { NextResponse } from "next/server";
+import supabaseAdmin from "@/lib/supabaseAdmin";
+
+const FMCSA_BASE = "https://mobile.fmcsa.dot.gov/qc/services";
 
 type CarrierRaw = {
-  carrierName: string;
+  carrierName: string | null;
   mcNumber: string | null;
   dotNumber: string | null;
-  authorityStatus: string;
-  insuranceStatus: string;
+  authorityStatus: string | null;
+  insuranceStatus: string | null;
+  outOfService: boolean | null;
   raw: any;
 };
 
-async function fetchCarrierData(value: string): Promise<CarrierRaw | null> {
-  const normalized = value.replace(/[^0-9]/g, "");
-  if (!normalized) return null;
-
-  return {
-    carrierName: "Sample Carrier Inc.",
-    mcNumber: "123456",
-    dotNumber: "789012",
-    authorityStatus: "Active",
-    insuranceStatus: "Active",
-    raw: { example: true, value }
-  };
+function normalizeQuery(raw: string) {
+  const trimmed = raw.trim();
+  const digits = trimmed.replace(/\D/g, "");
+  const isMc = /mc/i.test(trimmed);
+  return { trimmed, digits, isMc };
 }
 
 function evaluateRisk(carrier: CarrierRaw) {
+  // very simple first-pass risk logic
   let score = 80;
   let level: "low" | "medium" | "high" = "low";
 
-  if (carrier.authorityStatus !== "Active") {
-    score = 20;
+  if (carrier.outOfService) {
+    score = 15;
     level = "high";
-  } else if (carrier.insuranceStatus !== "Active") {
+  } else if (
+    carrier.authorityStatus &&
+    carrier.authorityStatus.toUpperCase() !== "ACTIVE"
+  ) {
     score = 30;
     level = "high";
+  } else if (
+    carrier.insuranceStatus &&
+    carrier.insuranceStatus.toUpperCase() !== "ACTIVE"
+  ) {
+    score = 40;
+    level = "medium";
   }
 
   return { score, level };
@@ -40,34 +48,135 @@ function evaluateRisk(carrier: CarrierRaw) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { value } = body as { value?: string };
+    const body = await req.json().catch(() => ({}));
+    // support both old shape { value } and newer { query }
+    const rawValue = (body.value ?? body.query ?? "") as string;
+    const email = (body.email ?? null) as string | null;
 
-    if (!value || !value.trim()) {
-      return NextResponse.json({ error: "Missing value" }, { status: 400 });
+    if (!rawValue || !rawValue.trim()) {
+      return NextResponse.json(
+        { error: "Missing DOT or MC number" },
+        { status: 400 }
+      );
     }
 
-    const carrier = await fetchCarrierData(value);
-    if (!carrier) {
-      return NextResponse.json({ error: "Carrier not found" }, { status: 404 });
+    const webKey = process.env.FMCSA_WEBKEY;
+    if (!webKey) {
+      console.error("FMCSA_WEBKEY is not set in env vars");
+      return NextResponse.json(
+        { error: "FMCSA API key not configured" },
+        { status: 500 }
+      );
     }
 
-    const risk = evaluateRisk(carrier);
+    const { digits, isMc } = normalizeQuery(rawValue);
+    if (!digits) {
+      return NextResponse.json(
+        { error: "Please enter a valid DOT or MC number" },
+        { status: 400 }
+      );
+    }
 
+    const endpoint = isMc
+      ? `${FMCSA_BASE}/carriers/docket-number/${digits}?webKey=${encodeURIComponent(
+          webKey
+        )}`
+      : `${FMCSA_BASE}/carriers/${digits}?webKey=${encodeURIComponent(webKey)}`;
+
+    const res = await fetch(endpoint, { next: { revalidate: 0 } });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("FMCSA error", res.status, text);
+      return NextResponse.json(
+        {
+          error: `FMCSA responded with status ${res.status}. Try another number.`,
+        },
+        { status: 502 }
+      );
+    }
+
+    const data = await res.json();
+
+    // FMCSA QCMobile can return either content.carriers[] or content.carrier
+    const content = (data as any).content ?? {};
+    const carrierRaw =
+      Array.isArray(content.carriers) && content.carriers.length > 0
+        ? content.carriers[0]
+        : content.carrier ?? null;
+
+    if (!carrierRaw) {
+      return NextResponse.json(
+        { error: "No carrier found for that number" },
+        { status: 404 }
+      );
+    }
+
+    const simplified: CarrierRaw = {
+      carrierName:
+        carrierRaw.legalName ??
+        carrierRaw.dbaName ??
+        carrierRaw.carrierName ??
+        null,
+      mcNumber: carrierRaw.mcNumber ?? carrierRaw.docketNumber ?? null,
+      dotNumber: carrierRaw.dotNumber ?? carrierRaw.usdotNumber ?? null,
+      authorityStatus:
+        carrierRaw.operateStatus ??
+        carrierRaw.operationStatus ??
+        carrierRaw.authorityStatus ??
+        null,
+      insuranceStatus: carrierRaw.insuranceStatus ?? null,
+      outOfService:
+        carrierRaw.oosFlag === "Y" ||
+        carrierRaw.allowToOperate === "N" ||
+        carrierRaw.operateStatus === "OUT_OF_SERVICE",
+      raw: carrierRaw,
+    };
+
+    const risk = evaluateRisk(simplified);
+
+    // Best-effort logging into Supabase (won't break response if it fails)
+    try {
+      const { error: insertError } = await supabaseAdmin
+        .from("lookups")
+        .insert({
+          email,
+          query: rawValue,
+          dot_number: simplified.dotNumber,
+          mc_number: simplified.mcNumber,
+          carrier_name: simplified.carrierName,
+          operating_status: simplified.authorityStatus,
+          out_of_service: simplified.outOfService,
+          risk_score: risk.score,
+          risk_level: risk.level,
+          raw: data,
+        });
+
+      if (insertError) {
+        console.error("Supabase lookups insert error:", insertError);
+      }
+    } catch (e) {
+      console.error("Unexpected Supabase error inserting lookup:", e);
+    }
+
+    // Keep the same response shape your frontend already expects
     const responsePayload = {
-      carrierName: carrier.carrierName,
-      mcNumber: carrier.mcNumber,
-      dotNumber: carrier.dotNumber,
-      authorityStatus: carrier.authorityStatus,
-      insuranceStatus: carrier.insuranceStatus,
+      carrierName: simplified.carrierName,
+      mcNumber: simplified.mcNumber,
+      dotNumber: simplified.dotNumber,
+      authorityStatus: simplified.authorityStatus ?? "Unknown",
+      insuranceStatus: simplified.insuranceStatus ?? "Unknown",
       riskScore: risk.score,
       riskLevel: risk.level,
-      details: carrier.raw
+      details: simplified.raw,
     };
 
     return NextResponse.json(responsePayload);
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    console.error("Lookup route error", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
