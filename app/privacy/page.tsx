@@ -4,7 +4,7 @@ export default function PrivacyPage() {
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
         <h1 style={{ fontSize: 32, marginBottom: 16 }}>Privacy Policy</h1>
         <p style={{ marginBottom: 16, opacity: 0.8 }}>
-          This Privacy Policy explains how Deadhead Zero Logistics LLC ("we", "us", "our") collects, uses,
+          This Privacy Policy explains how Deadhead Zero Logistics LLC (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) collects, uses,
           and protects information in connection with the TenderGuard platform.
         </p>
         <h2 style={{ fontSize: 20, marginTop: 24, marginBottom: 8 }}>1. Information we collect</h2>
