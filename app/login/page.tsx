@@ -1,161 +1,106 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseClient } from "../../lib/supabaseClient";
+import supabase from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle"
+  );
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent) => {
+  useEffect(() => {
+    // If already logged in, go straight to dashboard
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        router.replace("/app");
+      }
+    });
+  }, [router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!email.trim()) {
-      setError("Enter your email.");
+      setError("Enter your work email to get a login link.");
       return;
     }
 
     setStatus("sending");
-    try {
-      const redirectTo =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/app`
-          : undefined;
 
-      const { error } = await supabaseClient.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          emailRedirectTo: redirectTo
-        }
-      });
+    const redirectTo =
+      (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "") + "/app";
 
-      if (error) throw error;
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        emailRedirectTo: redirectTo || undefined,
+      },
+    });
 
-      setStatus("sent");
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to send login link.");
+    if (error) {
+      console.error(error);
+      setError(error.message);
       setStatus("error");
+      return;
     }
+
+    setStatus("sent");
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "32px 16px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#020617"
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          padding: 24,
-          borderRadius: 16,
-          border: "1px solid rgba(148,163,184,0.4)",
-          backgroundColor: "#0f172a",
-          boxShadow: "0 18px 45px rgba(15,23,42,0.9)"
-        }}
-      >
-        <h1
-          style={{
-            fontSize: 24,
-            fontWeight: 700,
-            marginBottom: 8,
-            color: "#e5e7eb"
-          }}
-        >
-          Sign in to TenderGuard
-        </h1>
-        <p style={{ fontSize: 14, opacity: 0.8, marginBottom: 18 }}>
-          Use the same email you used at checkout. We&apos;ll send you a secure
-          login link.
+    <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-2xl bg-slate-900/80 border border-slate-800 p-8 shadow-xl shadow-cyan-500/10">
+        <h1 className="text-2xl font-semibold mb-2">Log in to TenderGuard</h1>
+        <p className="text-sm text-slate-400 mb-6">
+          We&apos;ll email you a magic link. No passwords, no friction.
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <label
-            htmlFor="email"
-            style={{
-              fontSize: 13,
-              display: "block",
-              marginBottom: 6,
-              opacity: 0.9
-            }}
-          >
-            Work email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@company.com"
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid #4b5563",
-              backgroundColor: "#020617",
-              color: "#e5e7eb",
-              fontSize: 14,
-              marginBottom: 12
-            }}
-          />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Work email
+            </label>
+            <input
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-500"
+              placeholder="you@brokerage.com"
+            />
+          </div>
+
+          {error && (
+            <p className="text-xs text-red-400">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={status === "sending"}
-            style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: 999,
-              border: "none",
-              backgroundColor: "#06b6d4",
-              color: "#020617",
-              fontWeight: 700,
-              fontSize: 15,
-              cursor: "pointer",
-              marginTop: 4
-            }}
+            className="w-full rounded-xl bg-cyan-500 text-slate-950 text-sm font-semibold py-2.5 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition"
           >
             {status === "sending" ? "Sending link..." : "Send magic link"}
           </button>
         </form>
 
-        {error && (
-          <p style={{ marginTop: 10, color: "#f97373", fontSize: 13 }}>{error}</p>
-        )}
-
         {status === "sent" && (
-          <p style={{ marginTop: 10, color: "#4ade80", fontSize: 13 }}>
-            Check your email for a login link. After clicking it, you&apos;ll be
-            redirected to your TenderGuard dashboard.
+          <p className="mt-4 text-xs text-emerald-300">
+            Magic link sent. Check your email and open the link on this device
+            to enter your dashboard.
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          style={{
-            marginTop: 16,
-            background: "transparent",
-            border: "none",
-            color: "#93c5fd",
-            fontSize: 13,
-            cursor: "pointer",
-            textDecoration: "underline"
-          }}
-        >
-          ← Back to homepage
-        </button>
+        <p className="mt-6 text-xs text-slate-500 text-center">
+          Technology platform only, not a freight broker or money transmitter.
+          We never hold freight dollars.
+        </p>
       </div>
     </main>
   );
