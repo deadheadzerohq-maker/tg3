@@ -130,129 +130,148 @@ export default function TenderGuardDashboard() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-        <div>
-          <h1 className="text-2xl font-semibold">TenderGuard Dashboard</h1>
-          {email && (
-            <p className="text-sm text-slate-400 mt-1">
-              Logged in as{" "}
-              <span className="font-mono text-slate-100">{email}</span>
-            </p>
-          )}
+      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold">
+              TenderGuard Dashboard
+            </h1>
+            {email && (
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Logged in as{" "}
+                <span className="font-mono text-slate-100">{email}</span>
+              </p>
+            )}
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="rounded-full border border-slate-700 px-4 py-2 text-xs sm:text-sm hover:bg-slate-800 transition"
+          >
+            Sign out
+          </button>
         </div>
-        <button
-          onClick={handleSignOut}
-          className="rounded-full border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800 transition"
-        >
-          Sign out
-        </button>
       </header>
 
       {/* Main content */}
-      <section className="flex-1 px-6 py-10 max-w-5xl w-full mx-auto">
-        <form onSubmit={handleSubmit}>
-          <label className="block text-lg font-medium mb-3">
-            Paste a carrier MC or DOT number to run a TenderGuard check.
-          </label>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-base outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-500 transition"
-              placeholder="e.g., MC 123456 or DOT 789012"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="sm:min-w-[150px] rounded-xl bg-cyan-500 text-slate-950 font-semibold px-5 py-3 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition"
-            >
-              {loading ? "Checking…" : "Run check"}
-            </button>
-          </div>
-        </form>
-
-        {error && (
-          <p className="mt-4 text-sm text-red-400">
-            {error}
-          </p>
-        )}
-
-        {result && (
-          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-cyan-500/10">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold">
-                  {result.carrierName || "Carrier found"}
-                </h2>
-                <p className="text-sm text-slate-400 mt-1">
-                  DOT {result.dotNumber || "—"}
-                  {result.mcNumber && <> · MC {result.mcNumber}</>}
-                </p>
-              </div>
-
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  result.riskLevel === "high"
-                    ? "bg-red-500/20 text-red-300 border border-red-500/40"
-                    : result.riskLevel === "medium"
-                    ? "bg-yellow-500/20 text-yellow-200 border border-yellow-500/40"
-                    : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                }`}
-              >
-                TenderGuard risk: {result.riskScore} ({result.riskLevel})
-              </span>
-            </div>
-
-            <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <dt className="text-slate-400">Operating status</dt>
-                <dd className="font-medium">
-                  {result.authorityStatus || "Unknown"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Insurance status</dt>
-                <dd className="font-medium">
-                  {result.insuranceStatus || "Unknown"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">DOT number</dt>
-                <dd className="font-medium">{result.dotNumber || "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">MC / Docket</dt>
-                <dd className="font-medium">{result.mcNumber || "—"}</dd>
-              </div>
-            </dl>
-
-            <p className="mt-6 text-xs text-slate-500">
-              FMCSA/SAFER data is used as-is. TenderGuard provides signals and
-              scoring only and does not replace your own compliance checks.
+      <section className="flex-1">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-8">
+          {/* Lookup card */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl shadow-cyan-500/10 p-6 sm:p-8">
+            <p className="text-base sm:text-lg font-medium mb-3">
+              Paste a carrier MC or DOT number to run a TenderGuard check.
             </p>
+            <p className="text-xs sm:text-sm text-slate-400 mb-5">
+              We ping FMCSA/SAFER in real time. No scraping, no spreadsheets,
+              just an instant risk signal.
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="flex-1 rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-base outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-500 transition"
+                  placeholder="e.g., MC 123456 or DOT 789012"
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="sm:min-w-[150px] rounded-xl bg-cyan-500 text-slate-950 font-semibold px-5 py-3 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                >
+                  {loading ? "Checking…" : "Run check"}
+                </button>
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-400">
+                  {error}
+                </p>
+              )}
+            </form>
           </div>
-        )}
+
+          {/* Result card */}
+          {result && (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-lg shadow-cyan-500/10 p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-semibold">
+                    {result.carrierName || "Carrier found"}
+                  </h2>
+                  <p className="text-sm text-slate-400 mt-1">
+                    DOT {result.dotNumber || "—"}
+                    {result.mcNumber && <> · MC {result.mcNumber}</>}
+                  </p>
+                </div>
+
+                <span
+                  className={`self-start px-3 py-1 rounded-full text-xs font-semibold ${
+                    result.riskLevel === "high"
+                      ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                      : result.riskLevel === "medium"
+                      ? "bg-yellow-500/20 text-yellow-200 border border-yellow-500/40"
+                      : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                  }`}
+                >
+                  TenderGuard risk: {result.riskScore} ({result.riskLevel})
+                </span>
+              </div>
+
+              <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <dt className="text-slate-400">Operating status</dt>
+                  <dd className="font-medium">
+                    {result.authorityStatus || "Unknown"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-slate-400">Insurance status</dt>
+                  <dd className="font-medium">
+                    {result.insuranceStatus || "Unknown"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-slate-400">DOT number</dt>
+                  <dd className="font-medium">{result.dotNumber || "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-slate-400">MC / Docket</dt>
+                  <dd className="font-medium">{result.mcNumber || "—"}</dd>
+                </div>
+              </dl>
+
+              <p className="mt-6 text-xs text-slate-500">
+                FMCSA/SAFER data is used as-is. TenderGuard provides signals and
+                scoring only and does not replace your own internal carrier
+                vetting process.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
-      <footer className="border-t border-slate-800 px-6 py-4 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div className="flex gap-4">
-          <a
-            href="/terms"
-            className="hover:text-slate-300 underline underline-offset-4"
-          >
-            Terms of Service
-          </a>
-          <a
-            href="/privacy"
-            className="hover:text-slate-300 underline underline-offset-4"
-          >
-            Privacy Policy
-          </a>
+      {/* Footer */}
+      <footer className="border-t border-slate-800 px-4 sm:px-6 py-4 text-xs text-slate-500">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex gap-4">
+            <a
+              href="/terms"
+              className="hover:text-slate-300 underline underline-offset-4"
+            >
+              Terms of Service
+            </a>
+            <a
+              href="/privacy"
+              className="hover:text-slate-300 underline underline-offset-4"
+            >
+              Privacy Policy
+            </a>
+          </div>
+          <p className="text-[11px] sm:text-xs text-slate-500">
+            Technology platform only, not a broker or load board. We never hold
+            freight dollars. Operated by Deadhead Zero Logistics LLC.
+          </p>
         </div>
-        <p className="text-xs text-slate-500">
-          Technology platform only, not a broker or load board. We never hold
-          freight dollars. Operated by Deadhead Zero Logistics LLC.
-        </p>
       </footer>
     </main>
   );
