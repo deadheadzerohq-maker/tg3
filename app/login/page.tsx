@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, getSupabaseClient } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabaseClient = supabase ?? getSupabaseClient();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
@@ -14,12 +15,17 @@ export default function LoginPage() {
 
   useEffect(() => {
     // If already logged in, go straight to dashboard
-    supabase.auth.getUser().then(({ data }) => {
+    if (!supabaseClient) {
+      setError("Supabase is not configured. Add env vars to enable login.");
+      return;
+    }
+
+    supabaseClient.auth.getUser().then(({ data }) => {
       if (data.user) {
         router.replace("/app");
       }
     });
-  }, [router]);
+  }, [router, supabaseClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,12 +36,18 @@ export default function LoginPage() {
       return;
     }
 
+    if (!supabaseClient) {
+      setError("Supabase is not configured. Add env vars to enable login.");
+      setStatus("error");
+      return;
+    }
+
     setStatus("sending");
 
     const redirectTo =
       (process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "") + "/app";
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabaseClient.auth.signInWithOtp({
       email: email.trim(),
       options: {
         emailRedirectTo: redirectTo || undefined,

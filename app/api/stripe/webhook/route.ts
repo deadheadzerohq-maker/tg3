@@ -2,22 +2,15 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
-if (!STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set");
-}
-if (!STRIPE_WEBHOOK_SECRET) {
-  throw new Error("STRIPE_WEBHOOK_SECRET is not set");
-}
-
 // Use a stable API version – Stripe will still send your dashboard version in events
-const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
+const stripe = STRIPE_SECRET_KEY
+  ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" })
+  : null;
 
 async function upsertSubscriberFromSubscription(opts: {
   email: string | null;
@@ -27,6 +20,11 @@ async function upsertSubscriberFromSubscription(opts: {
   const { email, customerId, subscriptionId } = opts;
   if (!email || !customerId || !subscriptionId) return;
 
+  if (!stripe) {
+    console.warn("Stripe client not configured; skipping subscriber upsert");
+    return;
+  }
+
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
   const status = subscription.status;
@@ -35,7 +33,13 @@ async function upsertSubscriberFromSubscription(opts: {
       ? new Date(subscription.current_period_end * 1000).toISOString()
       : null;
 
-  const { error } = await supabaseAdmin
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    console.warn("Supabase admin client not configured; skipping subscriber upsert");
+    return;
+  }
+
+  const { error } = await admin
     .from("subscribers")
     .upsert(
       {
@@ -60,6 +64,14 @@ export async function POST(req: Request) {
 
   if (!sig) {
     return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
+  }
+
+  if (!stripe || !STRIPE_WEBHOOK_SECRET) {
+    console.error("Stripe secrets are not configured; webhook cannot be processed");
+    return NextResponse.json(
+      { error: "Stripe not configured" },
+      { status: 500 }
+    );
   }
 
   const rawBody = await req.text();
