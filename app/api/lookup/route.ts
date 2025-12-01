@@ -1,6 +1,6 @@
 // app/api/lookup/route.ts
 import { NextResponse } from "next/server";
-import supabaseAdmin from "@/lib/supabaseAdmin";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 const FMCSA_BASE = "https://mobile.fmcsa.dot.gov/qc/services";
 
@@ -22,7 +22,6 @@ function normalizeQuery(raw: string) {
 }
 
 function evaluateRisk(carrier: CarrierRaw) {
-  // very simple first-pass risk logic
   let score = 80;
   let level: "low" | "medium" | "high" = "low";
 
@@ -49,7 +48,6 @@ function evaluateRisk(carrier: CarrierRaw) {
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    // support both old shape { value } and newer { query }
     const rawValue = (body.value ?? body.query ?? "") as string;
     const email = (body.email ?? null) as string | null;
 
@@ -98,7 +96,6 @@ export async function POST(req: Request) {
 
     const data = await res.json();
 
-    // FMCSA QCMobile can return either content.carriers[] or content.carrier
     const content = (data as any).content ?? {};
     const carrierRaw =
       Array.isArray(content.carriers) && content.carriers.length > 0
@@ -135,7 +132,6 @@ export async function POST(req: Request) {
 
     const risk = evaluateRisk(simplified);
 
-    // Best-effort logging into Supabase (won't break response if it fails)
     try {
       const { error: insertError } = await supabaseAdmin
         .from("lookups")
@@ -159,7 +155,6 @@ export async function POST(req: Request) {
       console.error("Unexpected Supabase error inserting lookup:", e);
     }
 
-    // Keep the same response shape your frontend already expects
     const responsePayload = {
       carrierName: simplified.carrierName,
       mcNumber: simplified.mcNumber,
