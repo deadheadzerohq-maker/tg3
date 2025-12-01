@@ -2,271 +2,260 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabaseClient } from "../../lib/supabaseClient";
+import supabase from "@/lib/supabaseClient";
 
-type LookupResult = {
-  carrierName: string;
+type LookupResponse = {
+  carrierName: string | null;
   mcNumber: string | null;
   dotNumber: string | null;
-  riskScore: number;
-  riskLevel: "low" | "medium" | "high";
   authorityStatus: string;
   insuranceStatus: string;
+  riskScore: number;
+  riskLevel: "low" | "medium" | "high" | string;
   details: any;
 };
 
-export default function DashboardPage() {
+export default function TenderGuardDashboard() {
   const router = useRouter();
+  const [email, setEmail] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
-  const [subscriptionOk, setSubscriptionOk] = useState<boolean | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
 
-  const [inputValue, setInputValue] = useState("");
-  const [loadingLookup, setLoadingLookup] = useState(false);
-  const [result, setResult] = useState<LookupResult | null>(null);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<LookupResponse | null>(null);
 
-  // 1) Check Supabase auth + subscription
+  // 1) Check auth & subscription
   useEffect(() => {
-    const check = async () => {
-      try {
-        const {
-          data: { user }
-        } = await supabaseClient.auth.getUser();
+    const run = async () => {
+      const { data } = await supabase.auth.getUser();
 
-        if (!user || !user.email) {
-          router.replace("/login");
-          return;
-        }
-
-        setUserEmail(user.email);
-
-        const { data, error } = await supabaseClient
-          .from("subscribers")
-          .select("status, current_period_end")
-          .eq("email", user.email)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Error checking subscribers:", error);
-          setSubscriptionOk(false);
-        } else if (!data) {
-          setSubscriptionOk(false);
-        } else {
-          setSubscriptionOk(data.status === "active");
-        }
-      } catch (err) {
-        console.error(err);
-        setSubscriptionOk(false);
-      } finally {
-        setCheckingAccess(false);
+      if (!data.user?.email) {
+        router.replace("/login");
+        return;
       }
+
+      const userEmail = data.user.email;
+      setEmail(userEmail);
+
+      // Check subscribers table (RLS currently off; later you can add policies)
+      const { data: subs, error: subsError } = await supabase
+        .from("subscribers")
+        .select("status, current_period_end")
+        .eq("email", userEmail)
+        .order("current_period_end", { ascending: false })
+        .limit(1);
+
+      if (subsError) {
+        console.error("Error checking subscribers:", subsError);
+      }
+
+      const sub = subs?.[0] ?? null;
+      const now = new Date();
+
+      const active =
+        sub &&
+        sub.status &&
+        sub.status !== "canceled" &&
+        (!sub.current_period_end ||
+          new Date(sub.current_period_end) > now);
+
+      if (!active) {
+        // No active subscription – send back to marketing page
+        router.replace("/");
+        return;
+      }
+
+      setHasAccess(true);
+      setCheckingAccess(false);
     };
 
-    check();
+    run();
   }, [router]);
 
-  const runLookup = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError(null);
     setResult(null);
 
-    if (!inputValue.trim()) {
-      setError("Enter an MC or DOT number.");
+    if (!query.trim()) {
+      setError("Enter a DOT or MC number to run a TenderGuard check.");
       return;
     }
 
-    setLoadingLookup(true);
+    setLoading(true);
+
     try {
       const res = await fetch("/api/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: inputValue.trim() })
+        body: JSON.stringify({
+          value: query,
+          email, // for logging in Supabase
+        }),
       });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error((data as any).error || "Lookup failed");
+      const json = await res.json();
+
+      if (!res.ok || json.error) {
+        throw new Error(json.error || "Lookup failed.");
       }
 
-      const data = (await res.json()) as LookupResult;
-      setResult(data);
+      setResult(json as LookupResponse);
     } catch (err: any) {
-      setError(err.message || "Lookup failed");
+      console.error(err);
+      setError(err.message || "Lookup failed.");
     } finally {
-      setLoadingLookup(false);
+      setLoading(false);
     }
   };
 
   const handleSignOut = async () => {
-    await supabaseClient.auth.signOut();
-    router.replace("/login");
+    await supabase.auth.signOut();
+    router.replace("/");
   };
 
-  // Loading state while we check auth + subscription
   if (checkingAccess) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          padding: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}
-      >
-        <p>Checking access…</p>
+      <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
+        <p className="text-sm text-slate-400">Checking access…</p>
       </main>
     );
   }
 
-  // Logged in but no active subscription
-  if (subscriptionOk === false) {
-    return (
-      <main
-        style={{
-          minHeight: "100vh",
-          padding: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          textAlign: "center"
-        }}
-      >
-        <h1 style={{ fontSize: 24, marginBottom: 12 }}>Subscription required</h1>
-        <p style={{ maxWidth: 420, opacity: 0.8 }}>
-          We couldn&apos;t find an active TenderGuard subscription for{" "}
-          <strong>{userEmail}</strong>. Make sure you use the same email you used
-          at checkout, or start a new subscription from the homepage.
-        </p>
-        <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              padding: "8px 14px",
-              borderRadius: 999,
-              border: "none",
-              backgroundColor: "#06b6d4",
-              color: "#020617",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
-          >
-            Go to homepage
-          </button>
-          <button
-            onClick={handleSignOut}
-            style={{
-              padding: "8px 14px",
-              borderRadius: 999,
-              border: "1px solid #4b5563",
-              backgroundColor: "transparent",
-              color: "#e5e7eb",
-              fontWeight: 500,
-              cursor: "pointer"
-            }}
-          >
-            Sign out
-          </button>
-        </div>
-      </main>
-    );
+  if (!hasAccess) {
+    // We already redirected; this is just a fallback
+    return null;
   }
 
-  // Otherwise: access granted
   return (
-    <main style={{ minHeight: "100vh", padding: 24 }}>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24
-        }}
-      >
+    <main className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+      {/* Top bar */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
         <div>
-          <h1 style={{ fontSize: 26, marginBottom: 4 }}>TenderGuard Dashboard</h1>
-          <p style={{ opacity: 0.8, fontSize: 13 }}>
-            Logged in as <strong>{userEmail}</strong>
-          </p>
+          <h1 className="text-2xl font-semibold">TenderGuard Dashboard</h1>
+          {email && (
+            <p className="text-sm text-slate-400 mt-1">
+              Logged in as{" "}
+              <span className="font-mono text-slate-100">{email}</span>
+            </p>
+          )}
         </div>
         <button
           onClick={handleSignOut}
-          style={{
-            padding: "6px 12px",
-            borderRadius: 999,
-            border: "1px solid #4b5563",
-            backgroundColor: "transparent",
-            color: "#e5e7eb",
-            fontSize: 13,
-            cursor: "pointer"
-          }}
+          className="rounded-full border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800 transition"
         >
           Sign out
         </button>
       </header>
 
-      <p style={{ marginBottom: 16 }}>
-        Paste a carrier MC or DOT number to run a TenderGuard check.
-      </p>
+      {/* Main content */}
+      <section className="flex-1 px-6 py-10 max-w-5xl w-full mx-auto">
+        <form onSubmit={handleSubmit}>
+          <label className="block text-lg font-medium mb-3">
+            Paste a carrier MC or DOT number to run a TenderGuard check.
+          </label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-base outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-500 transition"
+              placeholder="e.g., MC 123456 or DOT 789012"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="sm:min-w-[150px] rounded-xl bg-cyan-500 text-slate-950 font-semibold px-5 py-3 hover:bg-cyan-400 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            >
+              {loading ? "Checking…" : "Run check"}
+            </button>
+          </div>
+        </form>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        <input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="e.g., MC 123456 or DOT 789012"
-          style={{
-            flex: "1 1 220px",
-            padding: "8px 10px",
-            borderRadius: 6,
-            border: "1px solid #4b5563",
-            backgroundColor: "#020617",
-            color: "#f9fafb",
-            minWidth: 0
-          }}
-        />
-        <button
-          onClick={runLookup}
-          disabled={loadingLookup}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 6,
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 600,
-            minWidth: 140,
-            backgroundColor: "#06b6d4",
-            color: "#020617"
-          }}
-        >
-          {loadingLookup ? "Checking..." : "Run check"}
-        </button>
-      </div>
-
-      {error && (
-        <p style={{ color: "#f97373", marginBottom: 12, fontSize: 13 }}>{error}</p>
-      )}
-
-      {result && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: 16,
-            borderRadius: 8,
-            border: "1px solid #4b5563",
-            backgroundColor: "#020617"
-          }}
-        >
-          <h2 style={{ fontSize: 20, marginBottom: 8 }}>{result.carrierName}</h2>
-          <p>MC: {result.mcNumber || "N/A"}</p>
-          <p>DOT: {result.dotNumber || "N/A"}</p>
-          <p>Authority: {result.authorityStatus}</p>
-          <p>Insurance: {result.insuranceStatus}</p>
-          <p>
-            Risk: <strong>{result.riskScore}</strong> ({result.riskLevel})
+        {error && (
+          <p className="mt-4 text-sm text-red-400">
+            {error}
           </p>
+        )}
+
+        {result && (
+          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg shadow-cyan-500/10">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {result.carrierName || "Carrier found"}
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  DOT {result.dotNumber || "—"}
+                  {result.mcNumber && <> · MC {result.mcNumber}</>}
+                </p>
+              </div>
+
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  result.riskLevel === "high"
+                    ? "bg-red-500/20 text-red-300 border border-red-500/40"
+                    : result.riskLevel === "medium"
+                    ? "bg-yellow-500/20 text-yellow-200 border border-yellow-500/40"
+                    : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                }`}
+              >
+                TenderGuard risk: {result.riskScore} ({result.riskLevel})
+              </span>
+            </div>
+
+            <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <dt className="text-slate-400">Operating status</dt>
+                <dd className="font-medium">
+                  {result.authorityStatus || "Unknown"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-400">Insurance status</dt>
+                <dd className="font-medium">
+                  {result.insuranceStatus || "Unknown"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-400">DOT number</dt>
+                <dd className="font-medium">{result.dotNumber || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-400">MC / Docket</dt>
+                <dd className="font-medium">{result.mcNumber || "—"}</dd>
+              </div>
+            </dl>
+
+            <p className="mt-6 text-xs text-slate-500">
+              FMCSA/SAFER data is used as-is. TenderGuard provides signals and
+              scoring only and does not replace your own compliance checks.
+            </p>
+          </div>
+        )}
+      </section>
+
+      <footer className="border-t border-slate-800 px-6 py-4 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex gap-4">
+          <a
+            href="/terms"
+            className="hover:text-slate-300 underline underline-offset-4"
+          >
+            Terms of Service
+          </a>
+          <a
+            href="/privacy"
+            className="hover:text-slate-300 underline underline-offset-4"
+          >
+            Privacy Policy
+          </a>
         </div>
-      )}
+        <p className="text-xs text-slate-500">
+          Technology platform only, not a broker or load board. We never hold
+          freight dollars. Operated by Deadhead Zero Logistics LLC.
+        </p>
+      </footer>
     </main>
   );
 }
