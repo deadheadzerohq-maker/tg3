@@ -134,7 +134,7 @@ export default function TenderGuardDashboard() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold">
-              TenderGuard Dashboard
+              TenderGuard Dashboard v2 TEST
             </h1>
             {email && (
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
