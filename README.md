@@ -3,7 +3,7 @@
 A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as a live health index, predicts disruptions, and delivers alerts + AI reports. Technology platform only — not a freight broker or money transmitter.
 
 ## Stack
-- Next.js 14 App Router, TypeScript, Tailwind
+- Next.js 14 App Router, TypeScript, Tailwind-style utilities, Framer Motion, Lucide icons
 - Supabase (Postgres, Auth, RLS, Edge Functions)
 - Stripe Checkout + Billing Portal
 - Grok (xAI) for corridor narratives
@@ -40,6 +40,9 @@ For Supabase Edge Functions (set in the project dashboard):
 - `GROK_API_KEY` (for corridor narratives)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`
 - Any external API keys required by your data sources
+
+## CI
+- GitHub Actions workflow (`.github/workflows/ci.yml`) installs dependencies, runs lint, and builds with stub env values so PRs stay green.
 
 ## Notes
 - Corridor + risk tables are world-readable; user-owned tables are protected with RLS.

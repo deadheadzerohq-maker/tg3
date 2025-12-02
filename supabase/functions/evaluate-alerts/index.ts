@@ -8,6 +8,8 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ALERT_FROM_EMAIL =
   Deno.env.get("ALERT_FROM_EMAIL") || "info@deadheadzero.com";
 const ALERT_REPLY_TO = Deno.env.get("ALERT_REPLY_TO") || ALERT_FROM_EMAIL;
+const ALERT_SUBJECT_PREFIX = "DHZ Corridor Alert";
+const MAX_EMAIL_RETRIES = 3;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -31,7 +33,19 @@ serve(async () => {
       const [latest, previous] = snapshots;
       if (latest.health_index >= row.high_risk_threshold) continue;
 
-      const message = `Corridor ${row.corridor.name} health dropped from ${previous?.health_index ?? "N/A"} to ${latest.health_index}. Threshold: ${row.high_risk_threshold}.`;
+      const { subject, body } = buildEmailTemplate({
+        corridorName: row.corridor.name,
+        previousHealth: previous?.health_index ?? null,
+        newHealth: latest.health_index,
+        threshold: row.high_risk_threshold,
+        snapshotTime: latest.snapshot_time,
+      });
+
+      const emailDelivered = await sendEmail({
+        to: userEmail,
+        subject,
+        body,
+      });
 
       await supabase.from("alerts").insert({
         user_id: row.user_id,
@@ -40,14 +54,8 @@ serve(async () => {
         snapshot_time: latest.snapshot_time,
         previous_health: previous?.health_index ?? null,
         new_health: latest.health_index,
-        message,
-        delivered_via: ["email"],
-      });
-
-      await sendEmail({
-        to: userEmail,
-        subject: "DHZ Corridor Alert",
-        body: message,
+        message: body,
+        delivered_via: emailDelivered ? ["email"] : [],
       });
     }
 
@@ -57,6 +65,37 @@ serve(async () => {
     return new Response(JSON.stringify({ error: `${err}` }), { status: 500 });
   }
 });
+
+function buildEmailTemplate({
+  corridorName,
+  previousHealth,
+  newHealth,
+  threshold,
+  snapshotTime,
+}: {
+  corridorName: string;
+  previousHealth: number | null;
+  newHealth: number;
+  threshold: number;
+  snapshotTime: string;
+}) {
+  const subject = `${ALERT_SUBJECT_PREFIX}: ${corridorName} at ${newHealth}`;
+  const delta =
+    previousHealth !== null ? newHealth - previousHealth : undefined;
+  const changeLine =
+    delta !== undefined
+      ? `Change vs. previous: ${delta > 0 ? "+" : ""}${delta}`
+      : "Previous value unavailable";
+
+  const body = `Deadhead Zero corridor alert\n\n` +
+    `Corridor: ${corridorName}\n` +
+    `Observed: ${snapshotTime}\n` +
+    `Health: ${newHealth} (threshold ${threshold})\n` +
+    `${changeLine}\n\n` +
+    `You are receiving this because you watch this corridor. Alerts are email-only.`;
+
+  return { subject, body };
+}
 
 async function lookupUserEmail(userId: string) {
   try {
@@ -69,20 +108,45 @@ async function lookupUserEmail(userId: string) {
 }
 
 async function sendEmail({ to, subject, body }: { to?: string; subject: string; body: string }) {
-  if (!RESEND_API_KEY || !ALERT_FROM_EMAIL || !to) return;
+  if (!RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured; skipping email delivery");
+    return false;
+  }
 
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: ALERT_FROM_EMAIL,
-      to: [to],
-      reply_to: ALERT_REPLY_TO,
-      subject,
-      text: body,
-    }),
-  });
+  if (!to) {
+    console.warn("No recipient email found for alert");
+    return false;
+  }
+
+  for (let attempt = 1; attempt <= MAX_EMAIL_RETRIES; attempt++) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: ALERT_FROM_EMAIL,
+          to: [to],
+          reply_to: ALERT_REPLY_TO,
+          subject,
+          text: body,
+        }),
+      });
+
+      if (res.ok) return true;
+
+      console.warn("Email send failed", { attempt, status: res.status });
+    } catch (err) {
+      console.error("Email send error", { attempt, err });
+    }
+    await delay(250 * attempt);
+  }
+
+  return false;
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: demo-anon-key
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_STRIPE_PRICE_ID: price_test
+          SUPABASE_SERVICE_ROLE_KEY: service-role-key
+          STRIPE_SECRET_KEY: sk_test
+          STRIPE_WEBHOOK_SECRET: whsec_test
+          RESEND_API_KEY: test_resend_key
+          ALERT_FROM_EMAIL: info@deadheadzero.com
+          ALERT_REPLY_TO: info@deadheadzero.com
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: demo-anon-key
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_PUBLIC_STRIPE_PRICE_ID: price_test
+          SUPABASE_SERVICE_ROLE_KEY: service-role-key
+          STRIPE_SECRET_KEY: sk_test
+          STRIPE_WEBHOOK_SECRET: whsec_test
+          RESEND_API_KEY: test_resend_key
+          ALERT_FROM_EMAIL: info@deadheadzero.com
+          ALERT_REPLY_TO: info@deadheadzero.com
+          GROK_API_KEY: demo-grok-key

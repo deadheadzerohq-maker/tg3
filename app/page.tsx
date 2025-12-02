@@ -1,8 +1,12 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Sparkline } from "@/components/charts/Sparkline";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { ShieldCheck, Activity, Clock3 } from "lucide-react";
 import {
   ArrowUpRightIcon,
   BellIcon,
@@ -35,6 +39,18 @@ const corridors = [
   },
 ];
 
+const fadeIn = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
 export default function LandingPage() {
   return (
     <div className="flex-1">
@@ -44,8 +60,13 @@ export default function LandingPage() {
           <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-emerald-400/10 blur-3xl" />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-20 pt-8 sm:pt-12 lg:pt-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 animate-fade-up">
+          <motion.div
+            className="grid lg:grid-cols-2 gap-12 items-center"
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div className="space-y-8" variants={fadeIn}>
               <Badge label="Freight corridor intelligence" tone="positive" />
               <div className="space-y-4">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-glow">
@@ -56,72 +77,109 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="hover:-translate-y-0.5 hover:scale-105 duration-300 ease-out">
-                  <Link href="/register" className="flex items-center gap-2">
-                    Start Deadhead Zero Pro <ArrowUpRightIcon className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="ghost" size="lg" className="hover:-translate-y-0.5 duration-300 ease-out">
-                  <Link href="/pricing">See pricing</Link>
-                </Button>
+                <motion.div whileHover={{ y: -4, scale: 1.02 }} transition={{ duration: 0.2 }}>
+                  <Button asChild size="lg">
+                    <Link href="/register" className="flex items-center gap-2">
+                      Start Deadhead Zero Pro <ArrowUpRightIcon className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
+                  <Button asChild variant="ghost" size="lg">
+                    <Link href="/pricing">See pricing</Link>
+                  </Button>
+                </motion.div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-white/70">
-                <div className="card-backdrop rounded-xl p-4 border border-white/10 animate-fade-up animate-delay-75">
+              <motion.div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-white/70" variants={stagger}>
+                <motion.div
+                  className="card-backdrop rounded-xl p-4 border border-white/10"
+                  variants={fadeIn}
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 240, damping: 28 }}
+                >
                   <p className="text-2xl font-semibold text-white">0-100</p>
                   <p>Corridor Health Index with live telemetry.</p>
-                </div>
-                <div className="card-backdrop rounded-xl p-4 border border-white/10 animate-fade-up animate-delay-150">
+                </motion.div>
+                <motion.div
+                  className="card-backdrop rounded-xl p-4 border border-white/10"
+                  variants={fadeIn}
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 240, damping: 28 }}
+                >
                   <p className="text-2xl font-semibold text-white">+12k</p>
                   <p>Disruption alerts projected monthly.</p>
-                </div>
-                <div className="card-backdrop rounded-xl p-4 border border-white/10 animate-fade-up animate-delay-225">
+                </motion.div>
+                <motion.div
+                  className="card-backdrop rounded-xl p-4 border border-white/10"
+                  variants={fadeIn}
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 240, damping: 28 }}
+                >
                   <p className="text-2xl font-semibold text-white">99.9%</p>
                   <p>Uptime SLA on data delivery.</p>
+                </motion.div>
+              </motion.div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-white/70">
+                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                  <ShieldCheck className="h-3.5 w-3.5 text-aurora-300" />
+                  <span>SOC2 controls in motion</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                  <Activity className="h-3.5 w-3.5 text-emerald-300" />
+                  <span>Uptime &amp; status: always-on</span>
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                  <Clock3 className="h-3.5 w-3.5 text-aurora-300" />
+                  <span>Email alerting wired</span>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3 text-xs text-white/60">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">SOC2 controls in motion</span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Uptime &amp; status: always-on</span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Email alerting wired</span>
-              </div>
-            </div>
-            <Card className="relative overflow-hidden border-white/10 shadow-lg hover:-translate-y-1 duration-300 ease-out">
-              <div className="absolute inset-0 bg-gradient-to-br from-aurora-500/10 via-transparent to-emerald-400/10" />
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-white/60">Live Corridor Health</p>
-                    <p className="text-2xl font-semibold">National view</p>
-                  </div>
-                  <Badge label="Autopilot" tone="warning" />
-                </div>
-                <div className="grid gap-3">
-                  {corridors.map((corridor) => (
-                    <div
-                      key={corridor.name}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex flex-col gap-2 backdrop-blur-md hover:-translate-y-0.5 duration-300 ease-out"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-semibold">{corridor.name}</p>
-                          <p className="text-xs text-white/50">Live telemetry · 7d outlook</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-3xl font-bold text-aurora-300">{corridor.health}</p>
-                          <p className="text-xs text-white/60">{corridor.change}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-white/60">
-                        <BellIcon className="h-3.5 w-3.5 text-aurora-300" />
-                        <p>Risks: {corridor.risks.join(", ")}</p>
-                      </div>
-                      <Sparkline data={corridor.trend} />
+            </motion.div>
+            <motion.div
+              variants={fadeIn}
+              className="h-full"
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.25 }}
+            >
+              <Card className="relative overflow-hidden border-white/10 shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-br from-aurora-500/10 via-transparent to-emerald-400/10" />
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Live Corridor Health</p>
+                      <p className="text-2xl font-semibold">National view</p>
                     </div>
-                  ))}
+                    <Badge label="Autopilot" tone="warning" />
+                  </div>
+                  <div className="grid gap-3">
+                    {corridors.map((corridor) => (
+                      <motion.div
+                        key={corridor.name}
+                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex flex-col gap-2 backdrop-blur-md"
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-semibold">{corridor.name}</p>
+                            <p className="text-xs text-white/50">Live telemetry · 7d outlook</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-3xl font-bold text-aurora-300">{corridor.health}</p>
+                            <p className="text-xs text-white/60">{corridor.change}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-white/60">
+                          <BellIcon className="h-3.5 w-3.5 text-aurora-300" />
+                          <p>Risks: {corridor.risks.join(", ")}</p>
+                        </div>
+                        <Sparkline data={corridor.trend} />
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </div>
+              </Card>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
