@@ -45,7 +45,7 @@ export default function LandingPage() {
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-20 pt-8 sm:pt-12 lg:pt-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
+            <div className="space-y-8 animate-fade-up">
               <Badge label="Freight corridor intelligence" tone="positive" />
               <div className="space-y-4">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-glow">
@@ -56,31 +56,36 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="hover:-translate-y-0.5 hover:scale-105 duration-300 ease-out">
                   <Link href="/register" className="flex items-center gap-2">
                     Start Deadhead Zero Pro <ArrowUpRightIcon className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="lg">
+                <Button asChild variant="ghost" size="lg" className="hover:-translate-y-0.5 duration-300 ease-out">
                   <Link href="/pricing">See pricing</Link>
                 </Button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-white/70">
-                <div>
+                <div className="card-backdrop rounded-xl p-4 border border-white/10 animate-fade-up animate-delay-75">
                   <p className="text-2xl font-semibold text-white">0-100</p>
                   <p>Corridor Health Index with live telemetry.</p>
                 </div>
-                <div>
+                <div className="card-backdrop rounded-xl p-4 border border-white/10 animate-fade-up animate-delay-150">
                   <p className="text-2xl font-semibold text-white">+12k</p>
                   <p>Disruption alerts projected monthly.</p>
                 </div>
-                <div>
+                <div className="card-backdrop rounded-xl p-4 border border-white/10 animate-fade-up animate-delay-225">
                   <p className="text-2xl font-semibold text-white">99.9%</p>
                   <p>Uptime SLA on data delivery.</p>
                 </div>
               </div>
+              <div className="flex flex-wrap gap-3 text-xs text-white/60">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">SOC2 controls in motion</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Uptime &amp; status: always-on</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Email + SMS alerting wired</span>
+              </div>
             </div>
-            <Card className="relative overflow-hidden border-white/10">
+            <Card className="relative overflow-hidden border-white/10 shadow-lg hover:-translate-y-1 duration-300 ease-out">
               <div className="absolute inset-0 bg-gradient-to-br from-aurora-500/10 via-transparent to-emerald-400/10" />
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">
@@ -94,7 +99,7 @@ export default function LandingPage() {
                   {corridors.map((corridor) => (
                     <div
                       key={corridor.name}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex flex-col gap-2"
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex flex-col gap-2 backdrop-blur-md hover:-translate-y-0.5 duration-300 ease-out"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>

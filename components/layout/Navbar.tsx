@@ -26,6 +26,10 @@ export default function Navbar() {
             <p className="text-xs text-white/60">Corridor Health Intelligence</p>
           </div>
         </Link>
+        <div className="hidden lg:flex items-center gap-2 text-xs text-white/60">
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Status: Operational</span>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Trust: SOC2 in motion</span>
+        </div>
 
         <nav className="hidden md:flex items-center gap-2 text-sm text-white/70">
           {navLinks.map((link) => {

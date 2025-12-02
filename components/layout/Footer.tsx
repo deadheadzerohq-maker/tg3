@@ -15,6 +15,11 @@ export default function Footer() {
           <p className="text-sm text-white/60 max-w-xl">
             Technology platform only — models freight corridors as a health index. Not a freight broker and never a money transmitter.
           </p>
+          <div className="flex flex-wrap gap-2 text-xs text-white/60">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Status: 99.9% uptime</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Changelog: weekly</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Alerts: email + SMS</span>
+          </div>
         </div>
         <div className="space-y-2">
           <h4 className="text-white font-semibold">Product</h4>
