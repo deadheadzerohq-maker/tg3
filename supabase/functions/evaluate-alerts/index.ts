@@ -5,12 +5,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const ALERT_FROM_EMAIL = Deno.env.get("ALERT_FROM_EMAIL");
+const ALERT_FROM_EMAIL =
+  Deno.env.get("ALERT_FROM_EMAIL") || "info@deadheadzero.com";
 const ALERT_REPLY_TO = Deno.env.get("ALERT_REPLY_TO") || ALERT_FROM_EMAIL;
-const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-const TWILIO_FROM_NUMBER = Deno.env.get("TWILIO_FROM_NUMBER");
-const ALERT_SMS_TO = Deno.env.get("ALERT_SMS_TO");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -47,14 +44,11 @@ serve(async () => {
         delivered_via: ["email"],
       });
 
-      await Promise.all([
-        sendEmail({
-          to: userEmail,
-          subject: "DHZ Corridor Alert",
-          body: message,
-        }),
-        sendSms({ body: message }),
-      ]);
+      await sendEmail({
+        to: userEmail,
+        subject: "DHZ Corridor Alert",
+        body: message,
+      });
     }
 
     return new Response(JSON.stringify({ status: "ok" }), { status: 200 });
@@ -90,23 +84,5 @@ async function sendEmail({ to, subject, body }: { to?: string; subject: string; 
       subject,
       text: body,
     }),
-  });
-}
-
-async function sendSms({ body }: { body: string }) {
-  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !ALERT_SMS_TO) return;
-
-  const params = new URLSearchParams();
-  params.append("To", ALERT_SMS_TO);
-  params.append("From", TWILIO_FROM_NUMBER);
-  params.append("Body", body);
-
-  await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params.toString(),
   });
 }

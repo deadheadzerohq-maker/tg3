@@ -38,8 +38,4 @@ export const serverEnv = {
   resendApiKey: process.env.RESEND_API_KEY,
   alertFromEmail: process.env.ALERT_FROM_EMAIL,
   alertReplyTo: process.env.ALERT_REPLY_TO,
-  alertSmsTo: process.env.ALERT_SMS_TO,
-  twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
-  twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
-  twilioFromNumber: process.env.TWILIO_FROM_NUMBER,
 };

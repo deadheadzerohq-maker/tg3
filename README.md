@@ -7,7 +7,7 @@ A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as 
 - Supabase (Postgres, Auth, RLS, Edge Functions)
 - Stripe Checkout + Billing Portal
 - Grok (xAI) for corridor narratives
-- Resend (email) and optional Twilio SMS for alerts
+- Resend (email) alerts
 
 ## Structure
 - `app/` marketing, auth, and dashboard routes
@@ -17,7 +17,7 @@ A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as 
 - `supabase/migrations/` schema for corridors, risk snapshots, alerts, subscriptions
 
 ## Getting started
-1. Copy `.env.example` to `.env.local` and fill Supabase + Stripe keys (plus Grok/Resend/Twilio if used).
+1. Copy `.env.example` to `.env.local` and fill Supabase + Stripe keys (plus Grok/Resend if used).
 2. Install deps: `npm install` (Node 18+). If registry restrictions block installs, use an offline mirror.
 3. Run dev server: `npm run dev`.
 4. Deploy edge functions to Supabase and schedule cron:
@@ -33,13 +33,12 @@ Set these for Next.js (Vercel/local):
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
 - `GROK_API_KEY` (xAI)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO` (email alerts)
-- Optional SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `ALERT_SMS_TO`
 
 For Supabase Edge Functions (set in the project dashboard):
 - `SUPABASE_URL` (same as `NEXT_PUBLIC_SUPABASE_URL`)
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `GROK_API_KEY` (for corridor narratives)
-- `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_SMS_TO`
+- `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`
 - Any external API keys required by your data sources
 
 ## Notes

@@ -18,7 +18,7 @@ export default function Footer() {
           <div className="flex flex-wrap gap-2 text-xs text-white/60">
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Status: 99.9% uptime</span>
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Changelog: weekly</span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Alerts: email + SMS</span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Alerts: email</span>
           </div>
         </div>
         <div className="space-y-2">

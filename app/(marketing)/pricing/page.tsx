@@ -9,7 +9,7 @@ const tiers = [
     description: "For brokers and carriers that want AI-grade risk signals.",
     features: [
       "Unlimited corridor health lookups",
-      "Disruption alerts (email + SMS)",
+      "Disruption alerts (email)",
       "Daily + weekly AI forecasts",
       "Stripe-managed billing portal",
     ],

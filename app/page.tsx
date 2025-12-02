@@ -82,7 +82,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-3 text-xs text-white/60">
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">SOC2 controls in motion</span>
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Uptime &amp; status: always-on</span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Email + SMS alerting wired</span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Email alerting wired</span>
               </div>
             </div>
             <Card className="relative overflow-hidden border-white/10 shadow-lg hover:-translate-y-1 duration-300 ease-out">
@@ -146,7 +146,7 @@ export default function LandingPage() {
             <div className="space-y-3">
               <p className="font-semibold text-white">Disruption Alerts</p>
               <p>
-                AI watches your corridors and fires email/SMS when thresholds are crossed, drops in health are material, or border delays spike beyond SLA.
+                AI watches your corridors and fires email alerts when thresholds are crossed, drops in health are material, or border delays spike beyond SLA.
               </p>
             </div>
             <div className="space-y-3">
@@ -199,7 +199,7 @@ export default function LandingPage() {
             <ul className="space-y-3 text-sm text-white/70">
               <li>Supabase Edge Functions pull public weather, DOT, maritime and congestion signals every 30–60 minutes.</li>
               <li>AI-normalized scoring writes fresh snapshots to corridor_risk_snapshots with raw payloads for auditability.</li>
-              <li>evaluate-alerts detects threshold crossings for watched corridors and dispatches email/SMS with contextual narratives.</li>
+              <li>evaluate-alerts detects threshold crossings for watched corridors and dispatches email with contextual narratives.</li>
             </ul>
           </Card>
           <Card>

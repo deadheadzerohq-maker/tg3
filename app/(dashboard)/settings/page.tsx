@@ -22,15 +22,15 @@ export default function SettingsPage() {
       </Card>
       <Card className="space-y-3">
         <h2 className="text-xl font-semibold">Notification channels</h2>
-        <p className="text-sm text-white/70">Email is on by default. SMS optional.</p>
+        <p className="text-sm text-white/70">Email alerts are on by default for all corridor thresholds.</p>
         <div className="grid sm:grid-cols-2 gap-3 text-sm text-white/70">
           <label className="flex items-center gap-2">
-            <input type="checkbox" defaultChecked className="h-4 w-4" />
-            Email alerts
+            <input type="checkbox" defaultChecked disabled className="h-4 w-4" />
+            Email alerts (info@deadheadzero.com)
           </label>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="h-4 w-4" />
-            SMS alerts (Twilio)
+          <label className="flex items-center gap-2 opacity-50">
+            <input type="checkbox" disabled className="h-4 w-4" />
+            SMS delivery (coming soon)
           </label>
         </div>
       </Card>
