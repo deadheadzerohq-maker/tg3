@@ -29,7 +29,7 @@ A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as 
 Set these for Next.js (Vercel/local):
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from Supabase project settings)
 - `SUPABASE_SERVICE_ROLE_KEY` (server-side only)
-- `NEXT_PUBLIC_SITE_URL` (e.g., https://deadheadzero.com)
+- `NEXT_PUBLIC_SITE_URL` (defaults to https://deadheadzero.com)
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
 - `GROK_API_KEY` (xAI)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO` (email alerts)

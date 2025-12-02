@@ -11,9 +11,13 @@ const inter = Inter({
 });
 
 export const metadata = {
+  metadataBase: new URL("https://deadheadzero.com"),
   title: "Deadhead Zero | Freight Corridor Health & Disruption Intelligence",
   description:
     "Deadhead Zero models U.S. freight corridors as a live health index with AI-powered disruption forecasting. Technology platform only; not a freight broker or money transmitter.",
+  alternates: {
+    canonical: "https://deadheadzero.com",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -5,7 +5,7 @@ type ButtonVariant = "primary" | "ghost" | "outline";
 type ButtonSize = "sm" | "md" | "lg";
 
 const baseClasses =
-  "inline-flex items-center justify-center rounded-full font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-aurora-400 focus-visible:ring-offset-0";
+  "inline-flex items-center justify-center rounded-full font-semibold transition hover:-translate-y-0.5 hover:shadow-glow focus:outline-none focus-visible:ring-2 focus-visible:ring-aurora-400 focus-visible:ring-offset-0";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: "bg-gradient-to-r from-aurora-500 via-emerald-400 to-rose-400 text-midnight shadow-glow",
