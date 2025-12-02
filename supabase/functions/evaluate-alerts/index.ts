@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const ALERT_EMAIL_ENABLED = Deno.env.get("ALERT_EMAIL_ENABLED") !== "false";
 const ALERT_FROM_EMAIL =
   Deno.env.get("ALERT_FROM_EMAIL") || "info@deadheadzero.com";
 const ALERT_REPLY_TO = Deno.env.get("ALERT_REPLY_TO") || ALERT_FROM_EMAIL;
@@ -39,13 +40,21 @@ serve(async () => {
         newHealth: latest.health_index,
         threshold: row.high_risk_threshold,
         snapshotTime: latest.snapshot_time,
+        emailEnabled: ALERT_EMAIL_ENABLED,
       });
 
-      const emailDelivered = await sendEmail({
-        to: userEmail,
-        subject,
-        body,
-      });
+      let deliveredVia: string[] = [];
+
+      if (ALERT_EMAIL_ENABLED) {
+        const emailDelivered = await sendEmail({
+          to: userEmail,
+          subject,
+          body,
+        });
+        if (emailDelivered) {
+          deliveredVia = ["email"];
+        }
+      }
 
       await supabase.from("alerts").insert({
         user_id: row.user_id,
@@ -55,7 +64,7 @@ serve(async () => {
         previous_health: previous?.health_index ?? null,
         new_health: latest.health_index,
         message: body,
-        delivered_via: emailDelivered ? ["email"] : [],
+        delivered_via: deliveredVia,
       });
     }
 
@@ -72,12 +81,14 @@ function buildEmailTemplate({
   newHealth,
   threshold,
   snapshotTime,
+  emailEnabled,
 }: {
   corridorName: string;
   previousHealth: number | null;
   newHealth: number;
   threshold: number;
   snapshotTime: string;
+  emailEnabled: boolean;
 }) {
   const subject = `${ALERT_SUBJECT_PREFIX}: ${corridorName} at ${newHealth}`;
   const delta =
@@ -87,12 +98,16 @@ function buildEmailTemplate({
       ? `Change vs. previous: ${delta > 0 ? "+" : ""}${delta}`
       : "Previous value unavailable";
 
+  const deliveryLine = emailEnabled
+    ? "You are receiving this because you watch this corridor."
+    : "Watch status is stored in your dashboard; view alerts in-app.";
+
   const body = `Deadhead Zero corridor alert\n\n` +
     `Corridor: ${corridorName}\n` +
     `Observed: ${snapshotTime}\n` +
     `Health: ${newHealth} (threshold ${threshold})\n` +
     `${changeLine}\n\n` +
-    `You are receiving this because you watch this corridor. Alerts are email-only.`;
+    `${deliveryLine}`;
 
   return { subject, body };
 }
@@ -108,6 +123,10 @@ async function lookupUserEmail(userId: string) {
 }
 
 async function sendEmail({ to, subject, body }: { to?: string; subject: string; body: string }) {
+  if (!ALERT_EMAIL_ENABLED) {
+    return false;
+  }
+
   if (!RESEND_API_KEY) {
     console.warn("RESEND_API_KEY not configured; skipping email delivery");
     return false;

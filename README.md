@@ -32,13 +32,13 @@ Set these for Next.js (Vercel/local):
 - `NEXT_PUBLIC_SITE_URL` (defaults to https://deadheadzero.com)
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
 - `GROK_API_KEY` (xAI)
-- `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO` (email alerts)
+- `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED` (set to `false` to keep alerts in-app only)
 
 For Supabase Edge Functions (set in the project dashboard):
 - `SUPABASE_URL` (same as `NEXT_PUBLIC_SUPABASE_URL`)
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `GROK_API_KEY` (for corridor narratives)
-- `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`
+- `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED`
 - Any external API keys required by your data sources
 
 ## CI
