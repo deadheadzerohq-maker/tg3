@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/Badge";
 import { ShieldCheck } from "lucide-react";
 import { ArrowUpRightIcon, ShieldIcon } from "@/components/ui/Icons";
 
-const pillars = [
+type PillarTone = "default" | "positive" | "warning";
+
+const pillars: { title: string; copy: string; tone: PillarTone }[] = [
   {
     title: "Data fidelity first",
     copy:
