@@ -34,9 +34,9 @@ Set these for Next.js (Vercel/local):
 - `GROK_API_KEY` (xAI)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED` (set to `false` to keep alerts in-app only)
 
-For Supabase Edge Functions (set in the project dashboard):
-- `SUPABASE_URL` (same as `NEXT_PUBLIC_SUPABASE_URL`)
-- `SUPABASE_SERVICE_ROLE_KEY`
+For Supabase Edge Functions (set in the project dashboard — custom vars cannot start with `SUPABASE_`):
+- `EDGE_SUPABASE_URL` (same value as `NEXT_PUBLIC_SUPABASE_URL`)
+- `EDGE_SUPABASE_SERVICE_ROLE_KEY` (service role key)
 - `GROK_API_KEY` (for corridor narratives)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED`
 - Any external API keys required by your data sources

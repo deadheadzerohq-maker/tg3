@@ -2,8 +2,13 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+// Supabase Edge Functions cannot use custom env vars that start with SUPABASE_,
+// so we default to EDGE_SUPABASE_* and fall back to SUPABASE_* for local dev.
+const SUPABASE_URL =
+  Deno.env.get("EDGE_SUPABASE_URL") || Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY =
+  Deno.env.get("EDGE_SUPABASE_SERVICE_ROLE_KEY") ||
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ALERT_EMAIL_ENABLED = Deno.env.get("ALERT_EMAIL_ENABLED") !== "false";
 const ALERT_FROM_EMAIL =
