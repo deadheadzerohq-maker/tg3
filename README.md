@@ -33,12 +33,14 @@ Set these for Next.js (Vercel/local):
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
 - `GROK_API_KEY` (xAI)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED` (set to `false` to keep alerts in-app only)
+- `WEATHER_API_KEY` (WeatherAPI.com key used by the risk ingestor; optional but recommended)
 
 For Supabase Edge Functions (set in the project dashboard — custom vars cannot start with `SUPABASE_`):
 - `EDGE_SUPABASE_URL` (same value as `NEXT_PUBLIC_SUPABASE_URL`)
 - `EDGE_SUPABASE_SERVICE_ROLE_KEY` (service role key)
 - `GROK_API_KEY` (for corridor narratives)
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED`
+- `WEATHER_API_KEY` (WeatherAPI.com key)
 - Any external API keys required by your data sources
 
 ## CI
