@@ -1,18 +1,14 @@
-// lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
+import { publicEnv } from "./env";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = publicEnv.supabaseUrl;
+const supabaseAnonKey = publicEnv.supabaseAnonKey;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
-}
+export const createSupabaseBrowserClient = () =>
+  createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: true },
+  });
 
-// Main client instance
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Alias so older code can also import { supabaseClient }
-export const supabaseClient = supabase;
-
-// Default export so any default imports keep working too
-export default supabase;
+export const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { persistSession: false },
+});
