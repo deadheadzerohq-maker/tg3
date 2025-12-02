@@ -1,13 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "public-anon-key";
+import { cookies } from "next/headers";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { publicEnv } from "./env";
 
 export function getSupabaseServerClient() {
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  const cookieStore = cookies();
+  return createServerComponentClient({
+    cookies: () => cookieStore,
+    supabaseUrl: publicEnv.supabaseUrl,
+    supabaseKey: publicEnv.supabaseAnonKey,
   });
 }

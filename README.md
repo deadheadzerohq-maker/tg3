@@ -25,11 +25,19 @@ A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as 
    - `evaluate-alerts` shortly after
 
 ## Env vars
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- `NEXT_PUBLIC_SITE_URL`
+Set these for Next.js (Vercel/local):
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from Supabase project settings)
+- `SUPABASE_SERVICE_ROLE_KEY` (server-side only)
+- `NEXT_PUBLIC_SITE_URL` (e.g., https://deadheadzero.com)
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
-- `GROK_API_KEY`
-- Optional Twilio keys for SMS
+- `GROK_API_KEY` (xAI)
+- Optional Twilio SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
+
+For Supabase Edge Functions (set in the project dashboard):
+- `SUPABASE_URL` (same as `NEXT_PUBLIC_SUPABASE_URL`)
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `GROK_API_KEY` (for corridor narratives)
+- Any external API keys required by your data sources
 
 ## Notes
 - Corridor + risk tables are world-readable; user-owned tables are protected with RLS.
