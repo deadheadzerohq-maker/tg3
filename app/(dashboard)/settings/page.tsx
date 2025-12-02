@@ -13,7 +13,7 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-white/60">Subscription</p>
-            <h2 className="text-xl font-semibold">InfraPulse Pro</h2>
+            <h2 className="text-xl font-semibold">Deadhead Zero Pro</h2>
             <p className="text-sm text-white/60">$399/mo · billing via Stripe Checkout</p>
           </div>
           <Badge label="Active" tone="positive" />

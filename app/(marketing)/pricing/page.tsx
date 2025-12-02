@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const tiers = [
   {
-    name: "InfraPulse Pro",
+    name: "Deadhead Zero Pro",
     price: "$399/mo",
     description: "For brokers and carriers that want AI-grade risk signals.",
     features: [
@@ -17,20 +17,6 @@ const tiers = [
     href: "/register",
     highlight: true,
   },
-  {
-    name: "Enterprise Control Tower",
-    price: "Custom",
-    description: "For 3PLs, shippers, and OEM networks that need SLAs.",
-    features: [
-      "Unlimited seats & SSO",
-      "API & webhook delivery",
-      "Dedicated corridor onboarding",
-      "Private Slack + success engineer",
-    ],
-    cta: "Talk to us",
-    href: "mailto:enterprise@infrapulse.ai",
-    highlight: false,
-  },
 ];
 
 export default function PricingPage() {
@@ -40,10 +26,11 @@ export default function PricingPage() {
         <p className="text-sm text-white/60">Transparent and flat</p>
         <h1 className="text-4xl font-semibold">Pricing built for high-velocity ops teams</h1>
         <p className="text-white/60 max-w-2xl mx-auto">
-          One subscription covers your entire team. InfraPulse stays laser-focused on corridor health—no brokerage features, no freight payments, no distractions.
+          One subscription covers your entire team. Deadhead Zero stays laser-focused on corridor health—no brokerage
+          features, no freight payments, no distractions.
         </p>
       </div>
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-1 gap-6 max-w-3xl mx-auto w-full">
         {tiers.map((tier) => (
           <Card key={tier.name} className={tier.highlight ? "border-aurora-300/30" : ""}>
             <div className="flex items-start justify-between">
@@ -52,7 +39,6 @@ export default function PricingPage() {
                 <p className="text-3xl font-bold">{tier.price}</p>
                 <p className="text-sm text-white/60 mt-2">{tier.description}</p>
               </div>
-              {tier.highlight && <span className="px-3 py-1 rounded-full bg-aurora-500/20 text-xs text-aurora-100">Best for brokers</span>}
             </div>
             <ul className="mt-6 space-y-2 text-sm text-white/70">
               {tier.features.map((feature) => (
@@ -68,22 +54,6 @@ export default function PricingPage() {
           </Card>
         ))}
       </div>
-      <Card>
-        <div className="grid md:grid-cols-3 gap-6 items-center">
-          <div className="md:col-span-2 space-y-3">
-            <p className="text-sm text-white/60">What you will never see</p>
-            <h2 className="text-2xl font-semibold">No brokerage, no money movement, no dispatching.</h2>
-            <p className="text-white/70 text-sm">
-              InfraPulse™ is purely technology: telemetry, AI scoring, and notifications. We do not negotiate carrier rates, we do not handle freight dollars, and we stay neutral to keep your compliance team calm.
-            </p>
-          </div>
-          <div className="text-sm text-white/60 space-y-2">
-            <p>Technology platform operated by Deadhead Zero Logistics LLC.</p>
-            <p>Stripe invoicing + receipts included.</p>
-            <p>Usage caps? None. Just corridors that stay healthy.</p>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

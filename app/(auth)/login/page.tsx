@@ -8,7 +8,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md space-y-6">
         <div>
           <p className="text-sm text-white/60">Welcome back</p>
-          <h1 className="text-2xl font-semibold">Log in to InfraPulse™</h1>
+          <h1 className="text-2xl font-semibold">Log in to Deadhead Zero</h1>
         </div>
         <form className="space-y-4">
           <div className="space-y-2">
@@ -34,7 +34,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="text-sm text-white/60">
-          Need access? <Link href="/register" className="text-aurora-300">Start InfraPulse</Link>
+          Need access? <Link href="/register" className="text-aurora-300">Start Deadhead Zero</Link>
         </p>
       </Card>
     </div>

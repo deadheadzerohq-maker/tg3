@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const GROK_API_KEY = Deno.env.get("GROK_API_KEY");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -19,7 +19,7 @@ serve(async () => {
       const congestionRisk = Math.floor(Math.random() * 70);
       const healthIndex = Math.max(0, 100 - Math.round((weatherRisk + closureRisk + congestionRisk) / 3));
 
-      const infraNotes = OPENAI_API_KEY
+      const infraNotes = GROK_API_KEY
         ? await buildNarrative({ corridor: corridor.name, weatherRisk, closureRisk, congestionRisk })
         : `Weather ${weatherRisk}, closure ${closureRisk}, congestion ${congestionRisk}.`;
 
@@ -53,15 +53,15 @@ async function buildNarrative({
   congestionRisk: number;
 }) {
   try {
-    const prompt = `You are InfraPulse, summarizing corridor health. Corridor ${corridor} shows weather risk ${weatherRisk}, closure risk ${closureRisk}, congestion risk ${congestionRisk}. Provide a 2-sentence operational note without pricing guidance.`;
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const prompt = `You are Deadhead Zero, summarizing corridor health. Corridor ${corridor} shows weather risk ${weatherRisk}, closure risk ${closureRisk}, congestion risk ${congestionRisk}. Provide a 2-sentence operational note without pricing guidance.`;
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${GROK_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "grok-beta",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.2,
       }),
