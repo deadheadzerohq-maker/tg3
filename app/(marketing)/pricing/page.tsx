@@ -17,20 +17,6 @@ const tiers = [
     href: "/register",
     highlight: true,
   },
-  {
-    name: "Enterprise Control Tower",
-    price: "Custom",
-    description: "For 3PLs, shippers, and OEM networks that need SLAs.",
-    features: [
-      "Unlimited seats & SSO",
-      "API & webhook delivery",
-      "Dedicated corridor onboarding",
-      "Private Slack + success engineer",
-    ],
-    cta: "Talk to us",
-    href: "mailto:enterprise@infrapulse.ai",
-    highlight: false,
-  },
 ];
 
 export default function PricingPage() {
@@ -43,7 +29,7 @@ export default function PricingPage() {
           One subscription covers your entire team. InfraPulse stays laser-focused on corridor health—no brokerage features, no freight payments, no distractions.
         </p>
       </div>
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-1 gap-6 max-w-3xl mx-auto w-full">
         {tiers.map((tier) => (
           <Card key={tier.name} className={tier.highlight ? "border-aurora-300/30" : ""}>
             <div className="flex items-start justify-between">
@@ -52,7 +38,6 @@ export default function PricingPage() {
                 <p className="text-3xl font-bold">{tier.price}</p>
                 <p className="text-sm text-white/60 mt-2">{tier.description}</p>
               </div>
-              {tier.highlight && <span className="px-3 py-1 rounded-full bg-aurora-500/20 text-xs text-aurora-100">Best for brokers</span>}
             </div>
             <ul className="mt-6 space-y-2 text-sm text-white/70">
               {tier.features.map((feature) => (
