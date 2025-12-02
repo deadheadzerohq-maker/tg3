@@ -7,9 +7,9 @@ import Footer from "@/components/layout/Footer";
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata = {
-  title: "InfraPulse™ | Freight Corridor Health & Disruption Intelligence",
+  title: "Deadhead Zero | Freight Corridor Health & Disruption Intelligence",
   description:
-    "InfraPulse™ models U.S. freight corridors as a live health index with AI-powered disruption forecasting. Technology platform only; not a freight broker or money transmitter.",
+    "Deadhead Zero models U.S. freight corridors as a live health index with AI-powered disruption forecasting. Technology platform only; not a freight broker or money transmitter.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

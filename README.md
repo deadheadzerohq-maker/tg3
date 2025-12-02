@@ -1,4 +1,4 @@
-# InfraPulse™ SaaS
+# Deadhead Zero SaaS
 
 A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as a live health index, predicts disruptions, and delivers alerts + AI reports. Technology platform only — not a freight broker or money transmitter.
 

@@ -1,4 +1,4 @@
--- InfraPulse core schema
+-- Deadhead Zero core schema
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   role text not null default 'customer',

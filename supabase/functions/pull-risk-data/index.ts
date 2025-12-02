@@ -53,7 +53,7 @@ async function buildNarrative({
   congestionRisk: number;
 }) {
   try {
-    const prompt = `You are InfraPulse, summarizing corridor health. Corridor ${corridor} shows weather risk ${weatherRisk}, closure risk ${closureRisk}, congestion risk ${congestionRisk}. Provide a 2-sentence operational note without pricing guidance.`;
+    const prompt = `You are Deadhead Zero, summarizing corridor health. Corridor ${corridor} shows weather risk ${weatherRisk}, closure risk ${closureRisk}, congestion risk ${congestionRisk}. Provide a 2-sentence operational note without pricing guidance.`;
     const res = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {

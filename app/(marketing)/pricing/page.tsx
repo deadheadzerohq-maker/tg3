@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const tiers = [
   {
-    name: "InfraPulse Pro",
+    name: "Deadhead Zero Pro",
     price: "$399/mo",
     description: "For brokers and carriers that want AI-grade risk signals.",
     features: [
@@ -26,8 +26,8 @@ export default function PricingPage() {
         <p className="text-sm text-white/60">Transparent and flat</p>
         <h1 className="text-4xl font-semibold">Pricing built for high-velocity ops teams</h1>
         <p className="text-white/60 max-w-2xl mx-auto">
-          One subscription covers your entire team. InfraPulse stays laser-focused on corridor health—no brokerage features,
-          no freight payments, no distractions.
+          One subscription covers your entire team. Deadhead Zero stays laser-focused on corridor health—no brokerage
+          features, no freight payments, no distractions.
         </p>
       </div>
       <div className="grid md:grid-cols-1 gap-6 max-w-3xl mx-auto w-full">

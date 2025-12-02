@@ -43,7 +43,7 @@ export default function LandingPage() {
               <Badge label="Freight corridor intelligence" tone="positive" />
               <div className="space-y-4">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-glow">
-                  InfraPulse™ keeps the nation&apos;s freight corridors alive.
+                  Deadhead Zero keeps the nation&apos;s freight corridors alive.
                 </h1>
                 <p className="text-lg text-white/70 max-w-2xl">
                   AI-grade health scores for every U.S. corridor, predicted disruptions before they strike, and instant alerts when your network is at risk. Built to feel like a supercar UI—powered by real infrastructure data.
@@ -52,7 +52,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg">
                   <Link href="/register" className="flex items-center gap-2">
-                    Start InfraPulse Pro <ArrowUpRight className="h-4 w-4" />
+                    Start Deadhead Zero Pro <ArrowUpRight className="h-4 w-4" />
                   </Link>
                 </Button>
                 <Button asChild variant="ghost" size="lg">
@@ -162,9 +162,9 @@ export default function LandingPage() {
               <h3 className="text-xl font-semibold">Platform, not a broker</h3>
             </div>
           </div>
-          <p className="text-sm text-white/70">
-            InfraPulse™ is a technology platform only. We model infrastructure risk, forecast disruptions, and notify operators. We never negotiate rates or move freight dollars.
-          </p>
+            <p className="text-sm text-white/70">
+              Deadhead Zero is a technology platform only. We model infrastructure risk, forecast disruptions, and notify operators. We never negotiate rates or move freight dollars.
+            </p>
           <div className="space-y-3">
             <Badge label="SOC2 in motion" />
             <Badge label="PII minimized" tone="positive" />

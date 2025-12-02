@@ -7,13 +7,13 @@ export default function RegisterPage() {
   return (
     <div className="flex-1 flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-xl space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-white/60">InfraPulse Pro · $399/mo</p>
-            <h1 className="text-2xl font-semibold">Create your account</h1>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white/60">Deadhead Zero Pro · $399/mo</p>
+              <h1 className="text-2xl font-semibold">Create your account</h1>
+            </div>
+            <Badge label="Technology platform only" />
           </div>
-          <Badge label="Technology platform only" />
-        </div>
         <form className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
