@@ -26,7 +26,8 @@ export default function PricingPage() {
         <p className="text-sm text-white/60">Transparent and flat</p>
         <h1 className="text-4xl font-semibold">Pricing built for high-velocity ops teams</h1>
         <p className="text-white/60 max-w-2xl mx-auto">
-          One subscription covers your entire team. InfraPulse stays laser-focused on corridor health—no brokerage features, no freight payments, no distractions.
+          One subscription covers your entire team. InfraPulse stays laser-focused on corridor health—no brokerage features,
+          no freight payments, no distractions.
         </p>
       </div>
       <div className="grid md:grid-cols-1 gap-6 max-w-3xl mx-auto w-full">
@@ -53,22 +54,6 @@ export default function PricingPage() {
           </Card>
         ))}
       </div>
-      <Card>
-        <div className="grid md:grid-cols-3 gap-6 items-center">
-          <div className="md:col-span-2 space-y-3">
-            <p className="text-sm text-white/60">What you will never see</p>
-            <h2 className="text-2xl font-semibold">No brokerage, no money movement, no dispatching.</h2>
-            <p className="text-white/70 text-sm">
-              InfraPulse™ is purely technology: telemetry, AI scoring, and notifications. We do not negotiate carrier rates, we do not handle freight dollars, and we stay neutral to keep your compliance team calm.
-            </p>
-          </div>
-          <div className="text-sm text-white/60 space-y-2">
-            <p>Technology platform operated by Deadhead Zero Logistics LLC.</p>
-            <p>Stripe invoicing + receipts included.</p>
-            <p>Usage caps? None. Just corridors that stay healthy.</p>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }
