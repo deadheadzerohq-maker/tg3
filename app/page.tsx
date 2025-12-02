@@ -43,7 +43,7 @@ export default function LandingPage() {
           <div className="absolute -left-32 -top-24 h-96 w-96 rounded-full bg-aurora-500/20 blur-3xl" />
           <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-emerald-400/10 blur-3xl" />
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-20 pt-12 sm:pt-18 lg:pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-20 pt-8 sm:pt-12 lg:pt-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <Badge label="Freight corridor intelligence" tone="positive" />
