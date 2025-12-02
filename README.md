@@ -1,4 +1,4 @@
-# InfraPulse™ SaaS
+# Deadhead Zero SaaS
 
 A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as a live health index, predicts disruptions, and delivers alerts + AI reports. Technology platform only — not a freight broker or money transmitter.
 
@@ -6,7 +6,7 @@ A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as 
 - Next.js 14 App Router, TypeScript, Tailwind, Framer Motion
 - Supabase (Postgres, Auth, RLS, Edge Functions)
 - Stripe Checkout + Billing Portal
-- OpenAI / Grok for narrative risk notes
+- Grok (xAI) for narrative risk notes
 - Optional Twilio SMS
 
 ## Structure
@@ -28,7 +28,7 @@ A Next.js 14 + Supabase + Stripe platform that models U.S. freight corridors as 
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_SITE_URL`
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
-- `OPENAI_API_KEY`
+- `GROK_API_KEY`
 - Optional Twilio keys for SMS
 
 ## Notes

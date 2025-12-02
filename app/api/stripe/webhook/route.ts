@@ -4,10 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost";
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "service-role-key";
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");

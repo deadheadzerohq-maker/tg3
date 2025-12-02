@@ -2,7 +2,12 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Sparkline } from "@/components/charts/Sparkline";
-import { Bell, Map, ShieldCheck, Signal } from "lucide-react";
+import {
+  BellIcon,
+  MapIcon,
+  ShieldCheckIcon,
+  SignalIcon,
+} from "@/components/ui/Icons";
 
 const watchlist = [
   { corridor: "I-40 Amarillo → Albuquerque", health: 41, previous: 82, reason: "Snow & closure probability increased" },
@@ -40,7 +45,7 @@ export default function DashboardPage() {
               <p className="text-3xl font-bold">143</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-aurora-500/20 flex items-center justify-center">
-              <Map className="h-5 w-5 text-aurora-200" />
+              <MapIcon className="h-5 w-5 text-aurora-200" />
             </div>
           </div>
         </Card>
@@ -51,7 +56,7 @@ export default function DashboardPage() {
               <p className="text-3xl font-bold">38</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-rose-500/20 flex items-center justify-center">
-              <Bell className="h-5 w-5 text-rose-200" />
+              <BellIcon className="h-5 w-5 text-rose-200" />
             </div>
           </div>
         </Card>
@@ -62,7 +67,7 @@ export default function DashboardPage() {
               <p className="text-3xl font-bold">712</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <Signal className="h-5 w-5 text-emerald-200" />
+              <SignalIcon className="h-5 w-5 text-emerald-200" />
             </div>
           </div>
         </Card>
@@ -106,7 +111,7 @@ export default function DashboardPage() {
               <div key={forecast.name} className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-semibold">{forecast.name}</p>
-                  <ShieldCheck className="h-4 w-4 text-emerald-200" />
+                  <ShieldCheckIcon className="h-4 w-4 text-emerald-200" />
                 </div>
                 <Sparkline data={forecast.trend} label="Health trajectory" />
               </div>

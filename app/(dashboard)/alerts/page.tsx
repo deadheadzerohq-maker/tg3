@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Bell, Download } from "lucide-react";
+import { BellIcon, DownloadIcon } from "@/components/ui/Icons";
 
 const alerts = [
   {
@@ -27,13 +27,13 @@ export default function AlertsPage() {
           <h1 className="text-3xl font-semibold">Alerts</h1>
         </div>
         <Button variant="outline" className="flex items-center gap-2">
-          <Download className="h-4 w-4" /> Export CSV
+          <DownloadIcon className="h-4 w-4" /> Export CSV
         </Button>
       </div>
       <Card className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-rose-500/20 flex items-center justify-center">
-            <Bell className="h-5 w-5 text-rose-200" />
+            <BellIcon className="h-5 w-5 text-rose-200" />
           </div>
           <div>
             <p className="text-sm text-white/60">Latest alerts</p>

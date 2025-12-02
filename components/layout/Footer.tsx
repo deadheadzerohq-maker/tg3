@@ -8,7 +8,7 @@ export default function Footer() {
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-gradient-to-br from-aurora-500 via-emerald-400 to-rose-400" />
             <div>
-              <p className="font-semibold text-white">InfraPulse™</p>
+              <p className="font-semibold text-white">Deadhead Zero</p>
               <p className="text-xs text-white/50">Deadhead Zero Logistics LLC</p>
             </div>
           </div>
@@ -34,8 +34,9 @@ export default function Footer() {
         </div>
         <div className="space-y-2">
           <h4 className="text-white font-semibold">Contact</h4>
-          <p className="text-white/60">press@infrapulse.ai</p>
-          <p className="text-white/60">enterprise@infrapulse.ai</p>
+          <Link href="mailto:info@deadheadzero.com" className="text-white/60 hover:text-white">
+            info@deadheadzero.com
+          </Link>
         </div>
       </div>
     </footer>

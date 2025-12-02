@@ -6,9 +6,9 @@ export default function AboutPage() {
       <div className="space-y-3">
         <p className="text-sm text-white/60">Our stance</p>
         <h1 className="text-4xl font-semibold">Built for critical infrastructure teams</h1>
-        <p className="text-white/60 max-w-3xl">
-          InfraPulse™ is engineered by Deadhead Zero Logistics LLC as a pure technology platform. We fuse public infrastructure data, AI risk models, and human-grade design so brokers and carriers get clarity without introducing brokerage risk.
-        </p>
+          <p className="text-white/60 max-w-3xl">
+            Deadhead Zero is engineered by Deadhead Zero Logistics LLC as a pure technology platform. We fuse public infrastructure data, AI risk models, and human-grade design so brokers and carriers get clarity without introducing brokerage risk.
+          </p>
       </div>
       <Card className="space-y-4">
         <h2 className="text-2xl font-semibold">What we believe</h2>
@@ -20,9 +20,9 @@ export default function AboutPage() {
       </Card>
       <Card className="space-y-3">
         <h2 className="text-2xl font-semibold">Compliance & boundaries</h2>
-        <p className="text-sm text-white/70">
-          InfraPulse™ is not a freight broker or money transmitter. We do not negotiate rates, move freight dollars, or provide credit. Our role is to model corridor health, forecast disruptions, and deliver alerts. That clarity keeps compliance teams confident and lets your ops leaders move faster.
-        </p>
+          <p className="text-sm text-white/70">
+            Deadhead Zero is not a freight broker or money transmitter. We do not negotiate rates, move freight dollars, or provide credit. Our role is to model corridor health, forecast disruptions, and deliver alerts. That clarity keeps compliance teams confident and lets your ops leaders move faster.
+          </p>
       </Card>
     </div>
   );

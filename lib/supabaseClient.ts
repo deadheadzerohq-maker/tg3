@@ -1,8 +1,8 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
 
-// Client-side Supabase instance for App Router components. Relies on the
-// NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY environment
-// variables provided at runtime by Vercel.
-export const supabase = createClientComponentClient();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://localhost";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "public-anon-key";
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const supabaseClient = supabase;
 export default supabase;
