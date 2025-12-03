@@ -32,33 +32,18 @@ export default function RegisterPage() {
     setMessage(null);
 
     try {
-      const normalizedSiteUrl = (() => {
-        const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-        if (!rawSiteUrl) return null;
-        try {
-          const parsed = new URL(rawSiteUrl.replace(/\/$/, ""));
-          if (
-            parsed.hostname === "localhost" ||
-            parsed.hostname === "127.0.0.1" ||
-            parsed.hostname.endsWith(".local")
-          ) {
-            return null;
-          }
-          return parsed.origin;
-        } catch {
-          return null;
-        }
-      })();
-
-      if (!normalizedSiteUrl) {
-        setMessage(
-          "Set NEXT_PUBLIC_SITE_URL to your deployed https domain and add the exact https://your-domain/auth/callback redirect to Supabase Auth > Settings > Redirect URLs so confirmation links can return to checkout."
-        );
-        setLoading(false);
-        return;
-      }
-
-      const emailRedirectTo = `${normalizedSiteUrl}/auth/callback?next=checkout`;
+      const envSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+      const vercelUrl =
+        process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL || "";
+      const siteUrl =
+        envSiteUrl ||
+        (vercelUrl ? `https://${vercelUrl}` : "") ||
+        (typeof window !== "undefined" ? window.location.origin : "") ||
+        "";
+      const normalizedSiteUrl = siteUrl.replace(/\/$/, "");
+      const emailRedirectTo = normalizedSiteUrl
+        ? `${normalizedSiteUrl}/auth/callback?next=checkout`
+        : undefined;
 
       const { data, error } = await supabase.auth.signUp({
         email,
