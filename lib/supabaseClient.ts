@@ -1,8 +1,10 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { publicEnv } from "./env";
 
-const supabaseUrl = publicEnv.supabaseUrl;
-const supabaseAnonKey = publicEnv.supabaseAnonKey;
+// Use direct env reads here to avoid throwing in client bundles when other
+// required server env (e.g., Stripe) are absent. Auth screens should still
+// render and surface a friendly configuration message instead of blanking.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
 export const createSupabaseBrowserClient = (): SupabaseClient | null => {
   if (!supabaseUrl || !supabaseAnonKey) {

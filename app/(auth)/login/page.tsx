@@ -25,14 +25,20 @@ export default function LoginPage() {
     setLoading(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-      return;
-    }
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setMessage(error.message);
+        setLoading(false);
+        return;
+      }
 
-    router.push("/dashboard");
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error("Login failed", err);
+      setMessage(err?.message ?? "Unable to sign in right now. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (

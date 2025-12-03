@@ -29,52 +29,58 @@ export default function RegisterPage() {
     setLoading(true);
     setMessage(null);
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          company_name: company,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            company_name: company,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      setMessage(error.message);
+      if (error) {
+        setMessage(error.message);
+        setLoading(false);
+        return;
+      }
+
+      const accessToken = data.session?.access_token;
+      if (!accessToken) {
+        setMessage("Check your email to confirm your account before checkout.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        setMessage(body.error ?? "Unable to start checkout. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      const { url } = (await response.json()) as { url?: string };
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+
+      setMessage("Unable to start checkout. Please try again.");
       setLoading(false);
-      return;
-    }
-
-    const accessToken = data.session?.access_token;
-    if (!accessToken) {
-      setMessage("Check your email to confirm your account before checkout.");
+    } catch (err: any) {
+      console.error("Registration failed", err);
+      setMessage(err?.message ?? "Unable to register right now. Please try again.");
       setLoading(false);
-      return;
     }
-
-    const response = await fetch("/api/stripe/create-checkout-session", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      setMessage(body.error ?? "Unable to start checkout. Please try again.");
-      setLoading(false);
-      return;
-    }
-
-    const { url } = (await response.json()) as { url?: string };
-    if (url) {
-      window.location.href = url;
-      return;
-    }
-
-    setMessage("Unable to start checkout. Please try again.");
-    setLoading(false);
   };
 
   return (
