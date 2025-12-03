@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { getSupabaseServerClient } from "@/lib/auth";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 export async function POST() {
   const supabase = getSupabaseServerClient();
@@ -12,7 +13,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const origin = getSiteUrl();
   const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID;
 
   if (!priceId) {
