@@ -30,11 +30,17 @@ export default function RegisterPage() {
     setMessage(null);
 
     try {
+      const envSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+      const vercelUrl =
+        process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL || "";
       const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        (typeof window !== "undefined" ? window.location.origin : "");
-      const emailRedirectTo = siteUrl
-        ? `${siteUrl.replace(/\/$/, "")}/auth/callback?next=checkout`
+        envSiteUrl ||
+        (vercelUrl ? `https://${vercelUrl}` : "") ||
+        (typeof window !== "undefined" ? window.location.origin : "") ||
+        "";
+      const normalizedSiteUrl = siteUrl.replace(/\/$/, "");
+      const emailRedirectTo = normalizedSiteUrl
+        ? `${normalizedSiteUrl}/auth/callback?next=checkout`
         : undefined;
 
       const { data, error } = await supabase.auth.signUp({
