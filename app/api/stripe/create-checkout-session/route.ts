@@ -1,15 +1,31 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { publicEnv } from "@/lib/env";
-import { getSupabaseServerClient } from "@/lib/auth";
+import { createClient } from "@supabase/supabase-js";
 
-export async function POST() {
-  const supabase = getSupabaseServerClient();
+export async function POST(req: NextRequest) {
+  const authHeader = req.headers.get("authorization");
+  const accessToken = authHeader?.toLowerCase().startsWith("bearer ")
+    ? authHeader.slice(7)
+    : undefined;
+
+  const supabase = createClient(publicEnv.supabaseUrl, publicEnv.supabaseAnonKey, {
+    global: accessToken
+      ? {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      : undefined,
+    auth: { persistSession: false },
+  });
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+    error,
+  } = await supabase.auth.getUser(accessToken);
+
+  if (error || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
