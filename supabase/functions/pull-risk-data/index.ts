@@ -12,6 +12,7 @@ const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GROK_API_KEY = Deno.env.get("GROK_API_KEY");
 const WEATHER_API_KEY = Deno.env.get("WEATHER_API_KEY");
+const TRAFFIC_API_KEY = Deno.env.get("TRAFFIC_API_KEY");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -24,7 +25,10 @@ serve(async () => {
       const weatherData = WEATHER_API_KEY
         ? await fetchWeatherSignal({ corridor, apiKey: WEATHER_API_KEY })
         : null;
-      const signals = buildSignalSnapshot(corridor, weatherData);
+      const trafficData = TRAFFIC_API_KEY
+        ? await fetchTrafficSignal({ corridor, apiKey: TRAFFIC_API_KEY })
+        : null;
+      const signals = buildSignalSnapshot(corridor, weatherData, trafficData);
       const infraNotes = GROK_API_KEY
         ? await buildNarrative({
             corridor: corridor.name,
@@ -55,6 +59,7 @@ serve(async () => {
 function buildSignalSnapshot(
   corridor: { id: string; code?: string; region?: string; name: string },
   weatherSignal: null | { risk: number; source: any },
+  trafficSignal: null | { congestionRisk: number; incidentRisk: number; source: any },
 ) {
   const now = new Date();
   const seed = corridorSeed(corridor.code || corridor.id);
@@ -63,8 +68,12 @@ function buildSignalSnapshot(
   const weather_risk = weatherSignal
     ? normalizeRisk(weatherSignal.risk)
     : normalizeRisk(seed * 3 + now.getUTCMonth() * 7 + regionBias.weatherBias);
-  const closure_risk = normalizeRisk(seed * 5 + now.getUTCHours() * 2 + regionBias.closureBias);
-  const congestion_risk = normalizeRisk(seed * 7 + now.getUTCDay() * 11 + regionBias.congestionBias);
+  const closure_risk = trafficSignal
+    ? normalizeRisk(trafficSignal.incidentRisk)
+    : normalizeRisk(seed * 5 + now.getUTCHours() * 2 + regionBias.closureBias);
+  const congestion_risk = trafficSignal
+    ? normalizeRisk(trafficSignal.congestionRisk)
+    : normalizeRisk(seed * 7 + now.getUTCDay() * 11 + regionBias.congestionBias);
   const health_index = Math.max(0, 100 - Math.round((weather_risk + closure_risk + congestion_risk) / 3));
 
   return {
@@ -82,6 +91,7 @@ function buildSignalSnapshot(
         congestion_risk,
         region_bias: regionBias,
         weather_api: weatherSignal?.source,
+        traffic_api: trafficSignal?.source,
       },
       model: "deterministic-simulation:v1",
       confidence: 0.72,
@@ -175,6 +185,47 @@ async function fetchWeatherSignal({
     return { risk, source: { query, current } };
   } catch (err) {
     console.error("weather fetch failed", err);
+    return null;
+  }
+}
+
+async function fetchTrafficSignal({
+  corridor,
+  apiKey,
+}: {
+  corridor: { name: string; code?: string; region?: string };
+  apiKey: string;
+}) {
+  try {
+    const query = corridor.code || corridor.name || "United States";
+    const url = `https://api.api-ninjas.com/v1/traffic?city=${encodeURIComponent(query)}`;
+    const res = await fetch(url, {
+      headers: { Accept: "application/json", "X-Api-Key": apiKey },
+    });
+    if (!res.ok) throw new Error(`traffic api ${res.status}`);
+    const data = await res.json();
+
+    const payload = Array.isArray(data) ? data[0] ?? data : data;
+    const incidents = Array.isArray(payload?.incidents) ? payload.incidents.length : 0;
+    const congestionIndex = Number(payload?.congestion_index ?? 55);
+    const flowSpeed = Number(payload?.flow_speed ?? payload?.speed ?? 60);
+
+    const congestionRisk = Math.min(
+      95,
+      Math.max(5, Math.round(congestionIndex * 1.1 + incidents * 2)),
+    );
+    const incidentRisk = Math.min(
+      95,
+      Math.max(5, Math.round(incidents * 8 + Math.max(0, 100 - flowSpeed) * 0.6)),
+    );
+
+    return {
+      congestionRisk,
+      incidentRisk,
+      source: { query, payload },
+    };
+  } catch (err) {
+    console.error("traffic fetch failed", err);
     return null;
   }
 }
