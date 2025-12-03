@@ -21,6 +21,11 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!supabase) {
+      setMessage("App configuration error: Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
 
@@ -125,11 +130,16 @@ export default function RegisterPage() {
               />
             </div>
           </div>
-          <Button className="w-full" size="lg" type="submit" disabled={loading}>
+          <Button className="w-full" size="lg" type="submit" disabled={loading || !supabase}>
             {loading ? "Launching checkout..." : "Launch checkout"}
           </Button>
         </form>
         {message ? <p className="text-sm text-rose-200">{message}</p> : null}
+        {!supabase ? (
+          <p className="text-sm text-rose-200">
+            Missing Supabase configuration. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment.
+          </p>
+        ) : null}
         <p className="text-xs text-white/60">
           By starting, you agree this is a technology platform only. We do not negotiate freight or hold funds.
         </p>

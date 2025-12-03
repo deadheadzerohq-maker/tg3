@@ -1,4 +1,11 @@
-const required = (key: string, value: string | undefined) => {
+const required = (
+  key: string,
+  value: string | undefined,
+  { allowEmptyOnClient = false }: { allowEmptyOnClient?: boolean } = {}
+) => {
+  if (typeof window !== "undefined" && allowEmptyOnClient) {
+    return value ?? "";
+  }
   if (!value || value.length === 0) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
@@ -8,11 +15,13 @@ const required = (key: string, value: string | undefined) => {
 export const publicEnv = {
   supabaseUrl: required(
     "NEXT_PUBLIC_SUPABASE_URL",
-    process.env.NEXT_PUBLIC_SUPABASE_URL
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    { allowEmptyOnClient: true }
   ),
   supabaseAnonKey: required(
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { allowEmptyOnClient: true }
   ),
   siteUrl:
     process.env.NEXT_PUBLIC_SITE_URL ||

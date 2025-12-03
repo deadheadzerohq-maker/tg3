@@ -17,6 +17,11 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!supabase) {
+      setMessage("App configuration error: Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
 
@@ -60,11 +65,16 @@ export default function LoginPage() {
               required
             />
           </div>
-          <Button className="w-full" size="lg" type="submit" disabled={loading}>
+          <Button className="w-full" size="lg" type="submit" disabled={loading || !supabase}>
             {loading ? "Signing in..." : "Continue"}
           </Button>
         </form>
         {message ? <p className="text-sm text-rose-200">{message}</p> : null}
+        {!supabase ? (
+          <p className="text-sm text-rose-200">
+            Missing Supabase configuration. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment.
+          </p>
+        ) : null}
         <p className="text-sm text-white/60">
           Need access? <Link href="/register" className="text-aurora-300">Start Deadhead Zero</Link>
         </p>
