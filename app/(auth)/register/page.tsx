@@ -30,6 +30,13 @@ export default function RegisterPage() {
     setMessage(null);
 
     try {
+      const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        (typeof window !== "undefined" ? window.location.origin : "");
+      const emailRedirectTo = siteUrl
+        ? `${siteUrl.replace(/\/$/, "")}/auth/callback?next=checkout`
+        : undefined;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -38,6 +45,7 @@ export default function RegisterPage() {
             full_name: fullName,
             company_name: company,
           },
+          emailRedirectTo,
         },
       });
 
@@ -49,7 +57,9 @@ export default function RegisterPage() {
 
       const accessToken = data.session?.access_token;
       if (!accessToken) {
-        setMessage("Check your email to confirm your account before checkout.");
+        setMessage(
+          "Check your email to confirm your account. After confirming, you'll be brought back here to start checkout."
+        );
         setLoading(false);
         return;
       }
