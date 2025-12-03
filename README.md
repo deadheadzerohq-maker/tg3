@@ -54,3 +54,22 @@ For Supabase Edge Functions (set in the project dashboard — custom vars cannot
 - Corridor + risk tables are world-readable; user-owned tables are protected with RLS.
 - Webhook stores raw Stripe events for audit.
 - Footer + marketing copy emphasize non-brokerage posture and neutrality.
+
+## Publishing to a new GitHub repository
+If you want a clean history that only contains the current snapshot:
+1. (Optional) Back up the existing `.git` folder if you want to keep old history elsewhere, then run `rm -rf .git` to start fresh.
+2. Initialize and commit the current files:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit for Deadhead Zero"
+   ```
+3. Point the working copy at your new GitHub repo and push:
+   ```bash
+   git remote add origin https://github.com/deadheadzerohq-maker/dhz1.git
+   git branch -M main
+   git push -u origin main
+   ```
+4. Avoid adding secrets like `.env.local`; rely on Vercel/Supabase project env vars instead.
+
+If an `origin` remote already exists, remove it first with `git remote remove origin` before adding the new URL.
