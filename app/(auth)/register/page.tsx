@@ -31,8 +31,9 @@ export default function RegisterPage() {
 
     try {
       const siteUrl =
+        (typeof window !== "undefined" ? window.location.origin : "") ||
         process.env.NEXT_PUBLIC_SITE_URL ||
-        (typeof window !== "undefined" ? window.location.origin : "");
+        "";
       const emailRedirectTo = siteUrl
         ? `${siteUrl.replace(/\/$/, "")}/auth/callback?next=checkout`
         : undefined;
