@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { getSupabaseServerClient } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 export async function POST() {
   if (!supabaseAdmin) {
@@ -29,7 +30,7 @@ export async function POST() {
 
   const session = await stripe.billingPortal.sessions.create({
     customer: sub.stripe_customer_id,
-    return_url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000/dashboard",
+    return_url: `${getSiteUrl()}/dashboard`,
   });
 
   return NextResponse.json({ url: session.url });
