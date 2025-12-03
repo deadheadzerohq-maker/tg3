@@ -1,19 +1,13 @@
 // @ts-nocheck
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-// Supabase disallows custom env vars that start with SUPABASE_ inside Edge Functions.
-// Use EDGE_SUPABASE_URL / EDGE_SUPABASE_SERVICE_ROLE_KEY (with a backward-compatible
-// fallback for local dev where SUPABASE_* might still be set).
-const SUPABASE_URL =
-  Deno.env.get("EDGE_SUPABASE_URL") || Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY =
-  Deno.env.get("EDGE_SUPABASE_SERVICE_ROLE_KEY") ||
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const GROK_API_KEY = Deno.env.get("GROK_API_KEY");
-const WEATHER_API_KEY = Deno.env.get("WEATHER_API_KEY");
-const TRAFFIC_API_KEY = Deno.env.get("TRAFFIC_API_KEY");
-const FMCSA_API_KEY = Deno.env.get("FMCSA_API_KEY");
+const SUPABASE_URL = Deno.env.get("EDGE_SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("EDGE_SUPABASE_SERVICE_ROLE_KEY")!;
+const WEATHER_API_KEY = Deno.env.get("WEATHER_API_KEY") ?? "";
+const TRAFFIC_API_KEY = Deno.env.get("TRAFFIC_API_KEY") ?? "";
+const FMCSA_API_KEY = Deno.env.get("FMCSA_API_KEY") ?? "";
+const GROK_API_KEY = Deno.env.get("GROK_API_KEY") ?? "";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -23,21 +17,30 @@ serve(async () => {
     if (error) throw error;
 
     for (const corridor of corridors || []) {
+      const locationQuery = [corridor.name, corridor.region].filter(Boolean).join(" ");
+
       const weatherData = WEATHER_API_KEY
-        ? await fetchWeatherSignal({ corridor, apiKey: WEATHER_API_KEY })
+        ? await fetchWeatherSignal({ query: locationQuery, apiKey: WEATHER_API_KEY })
         : null;
+
+      const geocode = TRAFFIC_API_KEY
+        ? await geocodeLocation({ query: locationQuery, apiKey: TRAFFIC_API_KEY })
+        : null;
+
       const trafficData = TRAFFIC_API_KEY
-        ? await fetchTrafficSignal({ corridor, apiKey: TRAFFIC_API_KEY })
+        ? await fetchTrafficSignal({
+            corridor,
+            apiKey: TRAFFIC_API_KEY,
+            geocode,
+          })
         : null;
+
       const fmcsaSignal = FMCSA_API_KEY
         ? await fetchFmcsaSafetySignal({ corridor, apiKey: FMCSA_API_KEY })
         : null;
-      const signals = buildSignalSnapshot(
-        corridor,
-        weatherData,
-        trafficData,
-        fmcsaSignal,
-      );
+
+      const signals = buildSignalSnapshot(corridor, weatherData, trafficData, fmcsaSignal);
+
       const infraNotes = GROK_API_KEY
         ? await buildNarrative({
             corridor: corridor.name,
@@ -45,7 +48,7 @@ serve(async () => {
             closureRisk: signals.closure_risk,
             congestionRisk: signals.congestion_risk,
           })
-        : `Weather ${signals.weather_risk}, closure ${signals.closure_risk}, congestion ${signals.congestion_risk}.`;
+        : defaultNarrative(signals);
 
       await supabase.from("corridor_risk_snapshots").insert({
         corridor_id: corridor.id,
@@ -67,31 +70,30 @@ serve(async () => {
 
 function buildSignalSnapshot(
   corridor: { id: string; code?: string; region?: string; name: string },
-  weatherSignal: null | { risk: number; source: any },
-  trafficSignal: null | { congestionRisk: number; incidentRisk: number; source: any },
-  fmcsaSignal: null | { crashRisk: number; source: any },
+  weatherSignal: null | WeatherSignal,
+  trafficSignal: null | TrafficSignal,
+  fmcsaSignal: null | FmcsaSignal,
 ) {
   const now = new Date();
   const seed = corridorSeed(corridor.code || corridor.id);
   const regionBias = regionFactors[corridor.region?.toLowerCase() || "default"];
 
-  const safetyRisk = fmcsaSignal ? normalizeRisk(fmcsaSignal.crashRisk) : 0;
+  const weather_risk = weatherSignal?.risk ?? normalizeRisk(seed * 3 + now.getUTCMonth() * 7 + regionBias.weatherBias);
+  const congestion_risk = trafficSignal?.congestionRisk ??
+    normalizeRisk(seed * 7 + now.getUTCDay() * 11 + regionBias.congestionBias);
 
-  const weather_risk = weatherSignal
-    ? normalizeRisk(weatherSignal.risk)
-    : normalizeRisk(seed * 3 + now.getUTCMonth() * 7 + regionBias.weatherBias);
-  const closure_risk = trafficSignal
-    ? normalizeRisk(trafficSignal.incidentRisk + safetyRisk * 0.35)
-    : normalizeRisk(
-        seed * 5 +
-          now.getUTCHours() * 2 +
-          regionBias.closureBias +
-          safetyRisk * 0.5,
-      );
-  const congestion_risk = trafficSignal
-    ? normalizeRisk(trafficSignal.congestionRisk)
-    : normalizeRisk(seed * 7 + now.getUTCDay() * 11 + regionBias.congestionBias);
-  const health_index = Math.max(0, 100 - Math.round((weather_risk + closure_risk + congestion_risk) / 3));
+  const safetyRisk = fmcsaSignal ? normalizeRisk(fmcsaSignal.crashRisk) : 0;
+  const closure_risk = normalizeRisk(
+    (trafficSignal?.incidentRisk ?? 35) * (trafficSignal ? 1 : 0.4) +
+      safetyRisk * 0.4 +
+      regionBias.closureBias +
+      seed * 2,
+  );
+
+  const health_index = Math.max(
+    0,
+    100 - Math.round((weather_risk + closure_risk + congestion_risk) / 3),
+  );
 
   return {
     weather_risk,
@@ -111,8 +113,8 @@ function buildSignalSnapshot(
         traffic_api: trafficSignal?.source,
         fmcsa_api: fmcsaSignal?.source,
       },
-      model: "deterministic-simulation:v1",
-      confidence: 0.72,
+      model: "dhz-risk-engine:v2-weather-traffic-fmcsa",
+      confidence: 0.78,
     },
   };
 }
@@ -171,38 +173,62 @@ async function buildNarrative({
   }
 }
 
+function defaultNarrative(signals: {
+  weather_risk: number;
+  closure_risk: number;
+  congestion_risk: number;
+}) {
+  return `Weather ${signals.weather_risk}, closure ${signals.closure_risk}, congestion ${signals.congestion_risk}.`;
+}
+
 async function fetchWeatherSignal({
-  corridor,
+  query,
   apiKey,
 }: {
-  corridor: { name: string; region?: string };
+  query: string;
   apiKey: string;
-}) {
+}): Promise<WeatherSignal | null> {
   try {
-    const query = corridor.region || corridor.name || "United States";
-    const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error(`weather api ${res.status}`);
+    const url = `https://api.tomorrow.io/v4/weather/realtime?location=${encodeURIComponent(query)}&units=imperial`;
+    const res = await fetch(url, {
+      headers: { Accept: "application/json", "apikey": apiKey },
+    });
+    if (!res.ok) throw new Error(`tomorrow.io ${res.status}`);
     const data = await res.json();
-    const current = data?.current;
-    if (!current) throw new Error("missing current weather");
+    const values = data?.data?.values;
+    if (!values) throw new Error("missing weather values");
 
-    const wind = Number(current.wind_kph ?? 0);
-    const precip = Number(current.precip_mm ?? 0);
-    const visibility = Number(current.vis_km ?? 0);
-    const conditionText = (current.condition?.text || "").toLowerCase();
+    const wind = Number(values.windSpeed ?? 0);
+    const precip = Number(values.precipitationIntensity ?? 0);
+    const visibility = Number(values.visibility ?? 10);
+    const cloudCover = Number(values.cloudCover ?? 50);
+    const storms = Number(values.stormProbability ?? 0);
 
-    // Simple heuristic: stronger wind/precip and lower visibility raise risk.
-    const windFactor = Math.min(40, Math.max(0, wind * 0.8));
-    const precipFactor = Math.min(30, precip * 3);
+    const windFactor = clamp(wind * 1.5, 0, 40);
+    const precipFactor = clamp(precip * 120, 0, 35);
     const visibilityPenalty = visibility < 5 ? (5 - visibility) * 6 : 0;
-    const stormPenalty = /storm|snow|ice|freez|hail|blizzard|thunder/.test(conditionText) ? 20 : 0;
+    const stormPenalty = clamp(storms * 0.6 + cloudCover * 0.08, 0, 20);
 
-    const risk = Math.min(95, Math.max(5, Math.round(windFactor + precipFactor + visibilityPenalty + stormPenalty)));
+    const risk = clamp(Math.round(windFactor + precipFactor + visibilityPenalty + stormPenalty), 5, 95);
 
-    return { risk, source: { query, current } };
+    return { risk, source: { query, values } };
   } catch (err) {
     console.error("weather fetch failed", err);
+    return null;
+  }
+}
+
+async function geocodeLocation({ query, apiKey }: { query: string; apiKey: string }) {
+  try {
+    const url = `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(query)}.json?key=${apiKey}&limit=1`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(`tomtom geocode ${res.status}`);
+    const data = await res.json();
+    const result = data?.results?.[0]?.position;
+    if (!result) return null;
+    return { lat: Number(result.lat), lon: Number(result.lon), source: data?.results?.[0] };
+  } catch (err) {
+    console.error("geocode failed", err);
     return null;
   }
 }
@@ -210,37 +236,55 @@ async function fetchWeatherSignal({
 async function fetchTrafficSignal({
   corridor,
   apiKey,
+  geocode,
 }: {
   corridor: { name: string; code?: string; region?: string };
   apiKey: string;
-}) {
+  geocode: { lat: number; lon: number; source: unknown } | null;
+}): Promise<TrafficSignal | null> {
+  if (!geocode) return null;
   try {
-    const query = corridor.code || corridor.name || "United States";
-    const url = `https://api.api-ninjas.com/v1/traffic?city=${encodeURIComponent(query)}`;
-    const res = await fetch(url, {
-      headers: { Accept: "application/json", "X-Api-Key": apiKey },
-    });
-    if (!res.ok) throw new Error(`traffic api ${res.status}`);
-    const data = await res.json();
+    const flowUrl =
+      `https://api.tomtom.com/traffic/services/4/flowSegmentData/absolute/10/json?` +
+      `point=${geocode.lat},${geocode.lon}&key=${apiKey}`;
+    const flowRes = await fetch(flowUrl, { headers: { Accept: "application/json" } });
+    if (!flowRes.ok) throw new Error(`tomtom flow ${flowRes.status}`);
+    const flow = await flowRes.json();
 
-    const payload = Array.isArray(data) ? data[0] ?? data : data;
-    const incidents = Array.isArray(payload?.incidents) ? payload.incidents.length : 0;
-    const congestionIndex = Number(payload?.congestion_index ?? 55);
-    const flowSpeed = Number(payload?.flow_speed ?? payload?.speed ?? 60);
+    const bbox = buildBoundingBox(geocode.lat, geocode.lon, 0.6);
+    const incidentUrl =
+      `https://api.tomtom.com/traffic/services/5/incidentDetails?key=${apiKey}` +
+      `&bbox=${bbox}&fields={incidents{type,severity}}&timeValidityFilter=present` +
+      `&categoryFilter=accident,disabledVehicle,roadworks,closure`;
+    const incidentRes = await fetch(incidentUrl, { headers: { Accept: "application/json" } });
+    if (!incidentRes.ok) throw new Error(`tomtom incident ${incidentRes.status}`);
+    const incidentData = await incidentRes.json();
 
-    const congestionRisk = Math.min(
+    const incidents = Array.isArray(incidentData?.incidents)
+      ? incidentData.incidents
+      : Array.isArray(incidentData?.tm?.poi)
+        ? incidentData.tm.poi
+        : [];
+
+    const incidentRisk = clamp(
+      incidents.reduce((acc: number, item: any) => acc + severityWeight(item?.severity), 0) * 8,
+      5,
       95,
-      Math.max(5, Math.round(congestionIndex * 1.1 + incidents * 2)),
     );
-    const incidentRisk = Math.min(
-      95,
-      Math.max(5, Math.round(incidents * 8 + Math.max(0, 100 - flowSpeed) * 0.6)),
-    );
+
+    const currentSpeed = Number(flow?.flowSegmentData?.currentSpeed ?? 55);
+    const freeFlowSpeed = Number(flow?.flowSegmentData?.freeFlowSpeed ?? 65);
+    const ratio = freeFlowSpeed > 0 ? currentSpeed / freeFlowSpeed : 1;
+    const congestionRisk = clamp(Math.round((1 - ratio) * 100 + incidents.length * 3), 5, 95);
 
     return {
       congestionRisk,
       incidentRisk,
-      source: { query, payload },
+      source: {
+        geocode,
+        flow,
+        incidents: incidents.slice(0, 25),
+      },
     };
   } catch (err) {
     console.error("traffic fetch failed", err);
@@ -321,3 +365,26 @@ function primaryStateFromCode(code?: string | null) {
   const primary = stateSegment.split("-")[0];
   return /^[A-Z]{2}$/.test(primary) ? primary : null;
 }
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function buildBoundingBox(lat: number, lon: number, delta: number) {
+  const minLat = (lat - delta).toFixed(4);
+  const minLon = (lon - delta).toFixed(4);
+  const maxLat = (lat + delta).toFixed(4);
+  const maxLon = (lon + delta).toFixed(4);
+  return `${minLat},${minLon},${maxLat},${maxLon}`;
+}
+
+function severityWeight(severity: any) {
+  const value = typeof severity === "number" ? severity : 1;
+  if (value >= 4) return 3;
+  if (value >= 2) return 2;
+  return 1;
+}
+
+type WeatherSignal = { risk: number; source: unknown };
+type TrafficSignal = { congestionRisk: number; incidentRisk: number; source: unknown };
+type FmcsaSignal = { crashRisk: number; source: unknown };
