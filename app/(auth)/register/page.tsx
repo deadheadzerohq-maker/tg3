@@ -22,7 +22,9 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!supabase) {
-      setMessage("App configuration error: Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      setMessage(
+        "App configuration error: Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY from Supabase Settings > API."
+      );
       return;
     }
 
@@ -30,12 +32,33 @@ export default function RegisterPage() {
     setMessage(null);
 
     try {
-      const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        (typeof window !== "undefined" ? window.location.origin : "");
-      const emailRedirectTo = siteUrl
-        ? `${siteUrl.replace(/\/$/, "")}/auth/callback?next=checkout`
-        : undefined;
+      const normalizedSiteUrl = (() => {
+        const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+        if (!rawSiteUrl) return null;
+        try {
+          const parsed = new URL(rawSiteUrl.replace(/\/$/, ""));
+          if (
+            parsed.hostname === "localhost" ||
+            parsed.hostname === "127.0.0.1" ||
+            parsed.hostname.endsWith(".local")
+          ) {
+            return null;
+          }
+          return parsed.origin;
+        } catch {
+          return null;
+        }
+      })();
+
+      if (!normalizedSiteUrl) {
+        setMessage(
+          "Set NEXT_PUBLIC_SITE_URL to your deployed https domain and add the exact https://your-domain/auth/callback redirect to Supabase Auth > Settings > Redirect URLs so confirmation links can return to checkout."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const emailRedirectTo = `${normalizedSiteUrl}/auth/callback?next=checkout`;
 
       const { data, error } = await supabase.auth.signUp({
         email,
