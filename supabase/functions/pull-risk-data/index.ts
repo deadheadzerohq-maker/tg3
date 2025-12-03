@@ -13,6 +13,7 @@ const SUPABASE_SERVICE_ROLE_KEY =
 const GROK_API_KEY = Deno.env.get("GROK_API_KEY");
 const WEATHER_API_KEY = Deno.env.get("WEATHER_API_KEY");
 const TRAFFIC_API_KEY = Deno.env.get("TRAFFIC_API_KEY");
+const FMCSA_API_KEY = Deno.env.get("FMCSA_API_KEY");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -28,7 +29,15 @@ serve(async () => {
       const trafficData = TRAFFIC_API_KEY
         ? await fetchTrafficSignal({ corridor, apiKey: TRAFFIC_API_KEY })
         : null;
-      const signals = buildSignalSnapshot(corridor, weatherData, trafficData);
+      const fmcsaSignal = FMCSA_API_KEY
+        ? await fetchFmcsaSafetySignal({ corridor, apiKey: FMCSA_API_KEY })
+        : null;
+      const signals = buildSignalSnapshot(
+        corridor,
+        weatherData,
+        trafficData,
+        fmcsaSignal,
+      );
       const infraNotes = GROK_API_KEY
         ? await buildNarrative({
             corridor: corridor.name,
@@ -60,17 +69,25 @@ function buildSignalSnapshot(
   corridor: { id: string; code?: string; region?: string; name: string },
   weatherSignal: null | { risk: number; source: any },
   trafficSignal: null | { congestionRisk: number; incidentRisk: number; source: any },
+  fmcsaSignal: null | { crashRisk: number; source: any },
 ) {
   const now = new Date();
   const seed = corridorSeed(corridor.code || corridor.id);
   const regionBias = regionFactors[corridor.region?.toLowerCase() || "default"];
 
+  const safetyRisk = fmcsaSignal ? normalizeRisk(fmcsaSignal.crashRisk) : 0;
+
   const weather_risk = weatherSignal
     ? normalizeRisk(weatherSignal.risk)
     : normalizeRisk(seed * 3 + now.getUTCMonth() * 7 + regionBias.weatherBias);
   const closure_risk = trafficSignal
-    ? normalizeRisk(trafficSignal.incidentRisk)
-    : normalizeRisk(seed * 5 + now.getUTCHours() * 2 + regionBias.closureBias);
+    ? normalizeRisk(trafficSignal.incidentRisk + safetyRisk * 0.35)
+    : normalizeRisk(
+        seed * 5 +
+          now.getUTCHours() * 2 +
+          regionBias.closureBias +
+          safetyRisk * 0.5,
+      );
   const congestion_risk = trafficSignal
     ? normalizeRisk(trafficSignal.congestionRisk)
     : normalizeRisk(seed * 7 + now.getUTCDay() * 11 + regionBias.congestionBias);
@@ -92,6 +109,7 @@ function buildSignalSnapshot(
         region_bias: regionBias,
         weather_api: weatherSignal?.source,
         traffic_api: trafficSignal?.source,
+        fmcsa_api: fmcsaSignal?.source,
       },
       model: "deterministic-simulation:v1",
       confidence: 0.72,
@@ -228,4 +246,78 @@ async function fetchTrafficSignal({
     console.error("traffic fetch failed", err);
     return null;
   }
+}
+
+async function fetchFmcsaSafetySignal({
+  corridor,
+  apiKey,
+}: {
+  corridor: { name: string; code?: string; region?: string };
+  apiKey: string;
+}) {
+  try {
+    const stateCode = primaryStateFromCode(corridor.code);
+    if (!stateCode) return null;
+
+    const url = `https://mobile.fmcsa.dot.gov/qc/services/carriers?webKey=${apiKey}&state=${stateCode}`;
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) throw new Error(`fmcsa api ${res.status}`);
+    const data = await res.json();
+
+    const carriers = Array.isArray(data?.carriers)
+      ? data.carriers
+      : Array.isArray(data?.content?.carriers)
+        ? data.content.carriers
+        : Array.isArray(data?.content)
+          ? data.content
+          : [];
+
+    const sample = carriers.slice(0, 25);
+    const crashVolume = sample.reduce(
+      (acc, carrier) =>
+        acc +
+        Number(
+          carrier?.crash_total ??
+            carrier?.crashTotal ??
+            carrier?.crashes ??
+            carrier?.crash ??
+            0,
+        ),
+      0,
+    );
+    const oosRate = sample.reduce(
+      (acc, carrier) =>
+        acc +
+        Number(
+          carrier?.oos_rate ??
+            carrier?.oosRate ??
+            carrier?.out_of_service_rate ??
+            carrier?.oos ??
+            0,
+        ),
+      0,
+    );
+
+    const crashRisk = Math.min(
+      95,
+      Math.max(5, Math.round(crashVolume * 1.6 + oosRate * 10 + sample.length * 2)),
+    );
+
+    return { crashRisk, source: { state: stateCode, carriers: sample } };
+  } catch (err) {
+    console.error("fmcsa fetch failed", err);
+    return null;
+  }
+}
+
+function primaryStateFromCode(code?: string | null) {
+  if (!code) return null;
+  const parts = code.split("_");
+  const stateSegment = parts[1] || parts[0];
+  if (!stateSegment) return null;
+  const primary = stateSegment.split("-")[0];
+  return /^[A-Z]{2}$/.test(primary) ? primary : null;
 }

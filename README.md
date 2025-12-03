@@ -35,6 +35,7 @@ Set these for Next.js (Vercel/local):
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED` (set to `false` to keep alerts in-app only)
 - `WEATHER_API_KEY` (WeatherAPI.com key used by the risk ingestor; optional but recommended)
 - `TRAFFIC_API_KEY` (Traffic data provider key; enables live congestion/incident signals)
+- `FMCSA_API_KEY` (FMCSA webKey; enriches closure risk with safety activity by state)
 
 For Supabase Edge Functions (set in the project dashboard — custom vars cannot start with `SUPABASE_`):
 - `EDGE_SUPABASE_URL` (same value as `NEXT_PUBLIC_SUPABASE_URL`)
@@ -43,6 +44,7 @@ For Supabase Edge Functions (set in the project dashboard — custom vars cannot
 - `RESEND_API_KEY`, `ALERT_FROM_EMAIL`, `ALERT_REPLY_TO`, `ALERT_EMAIL_ENABLED`
 - `WEATHER_API_KEY` (WeatherAPI.com key)
 - `TRAFFIC_API_KEY` (Traffic data provider key)
+- `FMCSA_API_KEY` (FMCSA webKey; enriches closure risk)
 - Any external API keys required by your data sources
 
 ## CI
