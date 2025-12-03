@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
+
+export const dynamic = "force-dynamic";
 
 function parseHashTokens(hash: string) {
   const params = new URLSearchParams(hash.replace(/^#/, ""));
@@ -13,7 +15,7 @@ function parseHashTokens(hash: string) {
   return { access_token, refresh_token };
 }
 
-export default function AuthCallbackPage() {
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
@@ -103,5 +105,25 @@ export default function AuthCallbackPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <Card className="w-full max-w-lg space-y-4 text-center">
+            <div>
+              <p className="text-sm text-white/60">Deadhead Zero</p>
+              <h1 className="text-2xl font-semibold">Confirming your account...</h1>
+            </div>
+            <p className="text-sm text-white/70">Please wait...</p>
+          </Card>
+        </div>
+      }
+    >
+      <CallbackContent />
+    </Suspense>
   );
 }
